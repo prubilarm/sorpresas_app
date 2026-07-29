@@ -8,6 +8,8 @@
     "packages/*"
   ],
   "scripts": {
+    "start": "node packages/backend/dist/server.js",
+    "build": "npm --prefix packages/shared run build && npm --prefix packages/backend run build",
     "dev:backend": "npm --prefix packages/backend run dev",
     "dev:web": "npm --prefix apps/web run dev",
     "dev:mobile": "npm --prefix apps/mobile run dev",
