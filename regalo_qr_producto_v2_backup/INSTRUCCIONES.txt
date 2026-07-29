@@ -1,0 +1,33 @@
+PLANTILLA MAESTRA - REGALO QR V2
+=================================
+
+NOVEDADES DE ESTA VERSION
+- Secciones como las observadas en el video de referencia: Inicio, Carta, Fotos y Video.
+- Encabezado fijo con navegación.
+- Fecha destacada, fotografía principal, contador, carta, galería y cierre.
+- Botón animado que revela u oculta un video especial.
+- CREADOR-DE-CLIENTES.html permite subir nombres, fotografías y un video MP4/WebM.
+- El creador descarga un ZIP terminado para cada cliente.
+
+FORMA RECOMENDADA DE TRABAJO
+1. Abre CREADOR-DE-CLIENTES.html con Chrome o Edge.
+2. Completa los nombres, fecha, frases y carta.
+3. Sube una foto de portada, hasta cuatro fotos y un video.
+4. Presiona "Ver experiencia" para revisar el resultado.
+5. Presiona "Descargar paquete del cliente".
+6. Descomprime el ZIP descargado y publícalo en una carpeta distinta de tu hosting.
+7. Copia la URL pública y abre generar_qr.html para crear el QR.
+8. Guarda el QR como assets/qr.png y edita tarjeta.html con los nombres.
+
+VIDEO
+- Formato recomendado: MP4 H.264, vertical 9:16 o horizontal 16:9.
+- Duración sugerida: 10 a 60 segundos.
+- Recomendado: menos de 40 MB para que el sitio cargue rápido.
+- El video no se reproduce automáticamente: aparece al presionar el botón.
+
+PUBLICACION
+Cada cliente debe tener una URL única, por ejemplo:
+https://tudominio.cl/regalos/camila-y-diego/
+
+PRIVACIDAD
+El sitio incluye noindex/nofollow para desalentar su aparición en buscadores, pero cualquiera con el enlace puede abrirlo. Para mayor privacidad, usa enlaces difíciles de adivinar o protección por contraseña en el hosting.

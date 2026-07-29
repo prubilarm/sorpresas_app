@@ -1,0 +1,32 @@
+# Archivos y carpetas que NO deben subirse a GitHub
+node_modules/
+dist/
+.env
+.env.local
+.env.production
+
+# Base de datos local (en producción se usa Supabase)
+packages/backend/data/db.json
+
+# Archivos subidos localmente (en producción se usa Supabase Storage)
+packages/backend/uploads/
+!packages/backend/uploads/.gitkeep
+
+# Frames temporales de exportación de video
+packages/backend/uploads/frames/
+packages/backend/uploads/exports/
+
+# Logs y cachés
+*.log
+.cache/
+.vite/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+*.suo
+*.user

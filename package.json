@@ -1,0 +1,31 @@
+{
+  "name": "recuerdos-qr-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplicación móvil y web profesional para regalos personalizados con código QR",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm --prefix packages/backend run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev:mobile": "npm --prefix apps/mobile run dev",
+    "build:backend": "npm --prefix packages/backend run build",
+    "build:web": "npm --prefix apps/web run build",
+    "build:shared": "npm --prefix packages/shared run build",
+    "test": "npm --prefix packages/backend run test && npm --prefix apps/web run test",
+    "lint": "npm --prefix packages/backend run lint && npm --prefix apps/web run lint"
+  },
+  "keywords": [
+    "react",
+    "react-native",
+    "expo",
+    "express",
+    "swagger",
+    "supabase",
+    "qr-gift"
+  ],
+  "author": "Equipo Senior de Desarrolladores",
+  "license": "MIT"
+}
