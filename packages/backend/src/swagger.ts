@@ -1,6 +1,7 @@
 import { Express } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import path from 'path';
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -16,8 +17,8 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:4000',
-        description: 'Servidor Local de Desarrollo',
+        url: process.env.PUBLIC_DOMAIN || 'http://localhost:4000',
+        description: 'Servidor API Backend',
       },
     ],
     components: {
@@ -30,16 +31,31 @@ const options: swaggerJsdoc.Options = {
       },
     },
   },
-  apis: ['./src/routes/*.ts', './src/server.ts'],
+  apis: [
+    path.join(__dirname, './routes/*.ts'),
+    path.join(__dirname, './routes/*.js'),
+    path.join(__dirname, './server.ts'),
+    path.join(__dirname, './server.js'),
+  ],
 };
 
-const swaggerSpec = swaggerJsdoc(options);
+let swaggerSpec: any;
+try {
+  swaggerSpec = swaggerJsdoc(options);
+} catch (err) {
+  console.warn('[Swagger] Warning: could not parse JSDoc schemas:', err);
+  swaggerSpec = { openapi: '3.0.0', info: { title: 'Recuerdos QR API', version: '1.0.0' }, paths: {} };
+}
 
 export function setupSwagger(app: Express) {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  app.get('/api-docs.json', (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(swaggerSpec);
-  });
-  console.log('📖 Documentación Swagger UI disponible en http://localhost:4000/api-docs');
+  try {
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    app.get('/api-docs.json', (req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.send(swaggerSpec);
+    });
+    console.log('📖 Documentación Swagger UI disponible en /api-docs');
+  } catch (err) {
+    console.error('[Swagger] Error mounting Swagger UI:', err);
+  }
 }
