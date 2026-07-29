@@ -43,6 +43,11 @@ const assetsPath = path.join(__dirname, '../../../regalo_qr_producto_v2/assets')
 app.use('/uploads', express.static(uploadsPath));
 app.use('/assets', express.static(assetsPath));
 
+// Root welcome page / Swagger redirect
+app.get('/', (req, res) => {
+  res.redirect('/api-docs');
+});
+
 // Setup Swagger UI Documentation
 setupSwagger(app);
 
