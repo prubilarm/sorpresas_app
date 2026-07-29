@@ -161,8 +161,8 @@ export const Dashboard: React.FC = () => {
             {projects.map((p) => {
               const sender = p.sender_name || p.person_one_name || 'Remitente';
               const recipient = p.recipient_name || p.person_two_name || 'Destinatario';
-              const relLabel = RELATIONSHIP_OPTIONS.find((r) => r.value === p.relationship_type)?.label || 'Pareja';
-              const occLabel = OCCASION_OPTIONS.find((o) => o.value === p.occasion_type)?.label || 'Aniversario';
+              const relLabel = RELATIONSHIP_OPTIONS.find((r: any) => r.value === p.relationship_type)?.label || 'Pareja';
+              const occLabel = OCCASION_OPTIONS.find((o: any) => o.value === p.occasion_type)?.label || 'Aniversario';
 
               return (
                 <div
