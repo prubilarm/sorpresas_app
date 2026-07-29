@@ -688,7 +688,7 @@ export const ProjectEditor: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-5">
-                {Object.values(THEMES).map((t) => {
+                {(Object.values(THEMES) as any[]).map((t) => {
                   const isSelected = project.template_id === t.id;
                   return (
                     <button

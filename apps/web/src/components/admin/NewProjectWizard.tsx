@@ -10,6 +10,7 @@ import {
   EmotionalTone,
   generateDefaultGiftPreset,
 } from '@recuerdos-qr/shared';
+import { createProject } from '../../services/api';
 import {
   Heart,
   User,
@@ -91,13 +92,7 @@ export const NewProjectWizard: React.FC<NewProjectWizardProps> = ({ onClose, onC
     };
 
     try {
-      const res = await fetch('http://localhost:4000/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al crear el regalo');
+      const data = await createProject(payload);
       onCreated(data.project);
     } catch (err: any) {
       alert('Error: ' + err.message);
@@ -374,7 +369,7 @@ export const NewProjectWizard: React.FC<NewProjectWizardProps> = ({ onClose, onC
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[340px] overflow-y-auto pr-1">
-                {Object.values(THEMES).map((theme) => {
+                {(Object.values(THEMES) as any[]).map((theme) => {
                   const isRecommended = recommendation.recommendedThemes.includes(theme.id);
                   const isSelected = selectedTheme === theme.id;
                   return (
