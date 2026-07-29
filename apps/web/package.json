@@ -10,7 +10,7 @@
     "test": "node -e \"console.log('Frontend test suite passed')\""
   },
   "dependencies": {
-    "@recuerdos-qr/shared": "1.0.0",
+    "@recuerdos-qr/shared": "file:../../packages/shared",
     "clsx": "^2.1.0",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",

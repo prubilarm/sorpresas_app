@@ -10,7 +10,7 @@
     "test": "ts-node src/tests/backend.test.ts"
   },
   "dependencies": {
-    "@recuerdos-qr/shared": "1.0.0",
+    "@recuerdos-qr/shared": "file:../shared",
     "@supabase/supabase-js": "^2.111.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
