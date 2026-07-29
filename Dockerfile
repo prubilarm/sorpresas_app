@@ -62,9 +62,6 @@ RUN mkdir -p packages/backend/uploads \
              packages/backend/uploads/frames \
              packages/backend/data
 
-EXPOSE 4000
-
 ENV NODE_ENV=production
-ENV PORT=4000
 
 CMD ["node", "packages/backend/dist/server.js"]
