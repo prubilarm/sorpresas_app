@@ -68,18 +68,18 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// ── Startup ──────────────────────────────────────────────────────────────────
+// ── Immediate Startup ─────────────────────────────────────────────────────────
 if (require.main === module) {
-  const listenPort = Number(PORT) || 4000;
-  db.initialize().then(() => {
-    app.listen(listenPort, '0.0.0.0', () => {
-      console.log(`📖 Documentación Swagger UI disponible en http://0.0.0.0:${listenPort}/api-docs`);
-      console.log(`🚀 Backend Server ejecutándose en http://0.0.0.0:${listenPort}`);
-    });
-  }).catch((err) => {
-    console.error('Failed to initialize DB, starting anyway:', err);
-    app.listen(listenPort, '0.0.0.0', () => {
-      console.log(`🚀 Backend Server ejecutándose en http://0.0.0.0:${listenPort}`);
+  const listenPort = Number(process.env.PORT) || 4000;
+  app.listen(listenPort, '0.0.0.0', () => {
+    console.log(`🚀 Backend Server ejecutándose en http://0.0.0.0:${listenPort}`);
+    console.log(`📖 Documentación Swagger UI disponible en http://0.0.0.0:${listenPort}/api-docs`);
+
+    // Initialize database asynchronously in background without delaying server readiness
+    db.initialize().then(() => {
+      console.log('[DB] Database initialized successfully.');
+    }).catch((err) => {
+      console.error('[DB] Error initializing DB:', err);
     });
   });
 }
