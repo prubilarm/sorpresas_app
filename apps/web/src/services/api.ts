@@ -1,10 +1,9 @@
-// In production: set VITE_API_URL=https://your-backend.railway.app/api
-// In development: auto-detects localhost and uses http://localhost:4000/api
+// In production: connects to live Railway backend API
+// In development: connects to local Express backend on http://localhost:4000/api
 const API_BASE =
-  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) ||
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:4000/api'
-    : '/api');
+    : 'https://recuerdos-qrweb-production.up.railway.app/api';
 
 export async function fetchPublicGift(slug: string) {
   const res = await fetch(`${API_BASE}/public/r/${slug}`);
