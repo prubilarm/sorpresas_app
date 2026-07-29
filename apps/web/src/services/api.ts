@@ -4,7 +4,7 @@ const API_BASE =
   (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_URL) ||
   (typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:4000/api'
-    : 'https://recuerdos-qrweb-production.up.railway.app/api');
+    : '/api');
 
 export async function fetchPublicGift(slug: string) {
   const res = await fetch(`${API_BASE}/public/r/${slug}`);
