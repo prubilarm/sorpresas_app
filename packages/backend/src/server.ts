@@ -68,35 +68,20 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// ── Multi-Port Startup (Binds to both process.env.PORT, 4000 and 3000 for Railway compatibility) ──
+// ── Startup ──────────────────────────────────────────────────────────────────
 if (require.main === module) {
-  const primaryPort = Number(process.env.PORT) || 4000;
+  const listenPort = Number(process.env.PORT) || 4000;
 
-  // Primary listener
-  app.listen(primaryPort, '0.0.0.0', () => {
-    console.log(`🚀 Backend Server ejecutándose en http://0.0.0.0:${primaryPort}`);
-    console.log(`📖 Documentación Swagger UI disponible en http://0.0.0.0:${primaryPort}/api-docs`);
+  app.listen(listenPort, '0.0.0.0', () => {
+    console.log(`🚀 Backend Server ejecutándose en http://0.0.0.0:${listenPort}`);
+    console.log(`📖 Documentación Swagger UI disponible en http://0.0.0.0:${listenPort}/api-docs`);
 
-    // Async DB init
     db.initialize().then(() => {
       console.log('[DB] Database initialized successfully.');
     }).catch((err) => {
       console.error('[DB] Error initializing DB:', err);
     });
   });
-
-  // Secondary fallback listener on port 3000 if primary is not 3000
-  if (primaryPort !== 3000) {
-    try {
-      const fallbackApp = express();
-      fallbackApp.use(app);
-      fallbackApp.listen(3000, '0.0.0.0', () => {
-        console.log('🚀 Secondary listener bound to http://0.0.0.0:3000');
-      });
-    } catch {
-      // Ignore if port 3000 is busy
-    }
-  }
 }
 
 export default app;

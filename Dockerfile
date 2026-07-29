@@ -37,13 +37,9 @@ WORKDIR /app
 COPY package.json .
 COPY package-lock.json* .
 
-# Copy shared package
+# Copy packages
 COPY packages/shared packages/shared
-
-# Copy backend package
 COPY packages/backend packages/backend
-
-# Copy static assets (demo SVGs)
 COPY regalo_qr_producto_v2/assets regalo_qr_producto_v2/assets
 
 # Build shared package first
@@ -62,6 +58,9 @@ RUN mkdir -p packages/backend/uploads \
              packages/backend/uploads/frames \
              packages/backend/data
 
+EXPOSE 4000
+
 ENV NODE_ENV=production
+ENV PORT=4000
 
 CMD ["node", "packages/backend/dist/server.js"]
