@@ -4,7 +4,7 @@
   "description": "REST API Backend para Recuerdos QR con documentación Swagger",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm --prefix ../shared run build && tsc",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "test": "ts-node src/tests/backend.test.ts"
