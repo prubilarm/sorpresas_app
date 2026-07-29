@@ -70,16 +70,16 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 // ── Startup ──────────────────────────────────────────────────────────────────
 if (require.main === module) {
+  const listenPort = Number(PORT) || 4000;
   db.initialize().then(() => {
-    app.listen(PORT, () => {
-      console.log(`📖 Documentación Swagger UI disponible en http://localhost:${PORT}/api-docs`);
-      console.log(`🚀 Backend Server ejecutándose en http://localhost:${PORT}`);
-      console.log(`📘 Documentación Swagger disponible en http://localhost:${PORT}/api-docs`);
+    app.listen(listenPort, '0.0.0.0', () => {
+      console.log(`📖 Documentación Swagger UI disponible en http://0.0.0.0:${listenPort}/api-docs`);
+      console.log(`🚀 Backend Server ejecutándose en http://0.0.0.0:${listenPort}`);
     });
   }).catch((err) => {
     console.error('Failed to initialize DB, starting anyway:', err);
-    app.listen(PORT, () => {
-      console.log(`🚀 Backend Server ejecutándose en http://localhost:${PORT}`);
+    app.listen(listenPort, '0.0.0.0', () => {
+      console.log(`🚀 Backend Server ejecutándose en http://0.0.0.0:${listenPort}`);
     });
   });
 }
