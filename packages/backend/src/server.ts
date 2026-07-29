@@ -17,20 +17,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Allow requests from Vercel frontend and local dev
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  process.env.FRONTEND_URL,
-].filter(Boolean) as string[];
-
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.some(o => origin.startsWith(o))) return callback(null, true);
-    if (process.env.NODE_ENV !== 'production') return callback(null, true);
-    callback(new Error(`CORS blocked: ${origin}`));
-  },
+  origin: true,
   credentials: true,
 }));
 app.use(express.json({ limit: '50mb' }));

@@ -321,6 +321,23 @@ class DBManager {
       sb.from('profiles').select('*'),
     ]);
 
+    if (!projectsRes.data || projectsRes.data.length === 0) {
+      console.log('[DB] Supabase database is empty — seeding initial demo data...');
+      this.data = { ...INITIAL_STATE };
+      this._dirtyTables = new Set([
+        'users',
+        'projects',
+        'sections',
+        'media',
+        'timeline',
+        'qrCodes',
+        'cardDesigns',
+      ]);
+      await this.saveToSupabase();
+      console.log('[DB] ✓ Seeded initial demo data to Supabase!');
+      return;
+    }
+
     this.data = {
       projects: projectsRes.data || [],
       sections: sectionsRes.data || [],
