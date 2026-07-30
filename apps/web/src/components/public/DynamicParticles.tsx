@@ -14,21 +14,20 @@ export const DynamicParticles: React.FC<DynamicParticlesProps> = ({
 }) => {
   if (type === 'none') return null;
 
-  const count = type === 'confetti' ? 24 : 14;
+  const count = type === 'confetti' ? 30 : 25;
 
   const items = useMemo(() => {
     return Array.from({ length: count }).map((_, i) => {
-      const left = Math.floor(Math.random() * 92) + 4;
-      const size = Math.floor(Math.random() * 16) + 12;
-      const delay = Math.random() * 5;
-      const durationMult = speed === 'slow' ? 1.8 : speed === 'fast' ? 0.7 : 1;
-      const duration = (Math.random() * 4 + 4) * durationMult;
-      const rotation = Math.floor(Math.random() * 360);
+      const left = Math.floor(Math.random() * 90) + 5;
+      const size = Math.floor(Math.random() * 18) + 10; // 10–28px
+      const delay = Math.random() * 7;
+      const durationMult = speed === 'slow' ? 2 : speed === 'fast' ? 0.7 : 1;
+      const duration = (Math.random() * 5 + 6) * durationMult;
 
-      let symbol = '❤️';
-      if (type === 'stars') symbol = '⭐';
+      let symbol = '♥';
+      if (type === 'stars') symbol = '★';
       else if (type === 'confetti') {
-        const confettis = ['🎉', '✨', '🌟', '🎊', '🎈', '⭐'];
+        const confettis = ['🎉', '✨', '🌟', '🎊', '🎈', '⭐', '💫'];
         symbol = confettis[i % confettis.length];
       } else if (type === 'sparkles') symbol = '✨';
       else if (type === 'leaves') {
@@ -36,8 +35,9 @@ export const DynamicParticles: React.FC<DynamicParticlesProps> = ({
         symbol = leaves[i % leaves.length];
       }
 
-      return { id: i, left, size, delay, duration, rotation, symbol };
+      return { id: i, left, size, delay, duration, symbol };
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, count, speed]);
 
   return (
@@ -45,16 +45,17 @@ export const DynamicParticles: React.FC<DynamicParticlesProps> = ({
       {items.map((item) => (
         <span
           key={item.id}
-          className="absolute animate-float opacity-75 select-none"
+          className="absolute select-none"
           style={{
             left: `${item.left}%`,
             bottom: '-20px',
             fontSize: `${item.size}px`,
             animationDelay: `${item.delay}s`,
             animationDuration: `${item.duration}s`,
-            transform: `rotate(${item.rotation}deg)`,
+            animation: `waveFloat ${item.duration}s ${item.delay}s linear infinite`,
             color: color,
-            textShadow: '0 0 10px rgba(255,255,255,0.4)',
+            filter: `drop-shadow(0 0 6px ${color}88)`,
+            opacity: 0,
           }}
         >
           {item.symbol}

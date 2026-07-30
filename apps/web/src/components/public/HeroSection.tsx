@@ -25,6 +25,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 }) => {
   const [ref, visible] = useInView(0.1);
   const resolvedCover = resolveMediaUrl(coverUrl) || '/assets/fotos/portada.svg';
+  const accentColor = theme?.accentColor || '#ec4899';
+  const glowColor = theme?.glowColor || 'rgba(220,40,110,0.35)';
 
   return (
     <section
@@ -46,18 +48,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <div
         className={`reveal reveal-delay-1 ${visible ? 'is-visible' : ''} relative inline-flex items-center gap-2 py-2 px-6 rounded-full text-xs font-black tracking-widest uppercase shadow-lg`}
         style={{
-          backgroundColor: theme?.accentColor || '#df2878',
+          backgroundColor: accentColor,
           color: '#ffffff',
-          boxShadow: `0 6px 24px ${theme?.glowColor || 'rgba(220,40,110,0.4)'}`,
+          boxShadow: `0 6px 24px ${glowColor}`,
         }}
       >
-        <DynamicIcon icon={icon} className="w-3.5 h-3.5" />
+        <DynamicIcon icon={icon} className="w-3.5 h-3.5 animate-beat" />
         {dateLabel}
       </div>
 
-      {/* Script Title */}
+      {/* Script Title — shimmer */}
       <h1
-        className={`reveal reveal-delay-2 ${visible ? 'is-visible' : ''} relative text-4xl sm:text-6xl font-serif mt-5 mb-4 leading-tight drop-shadow-md`}
+        className={`reveal reveal-delay-2 ${visible ? 'is-visible' : ''} relative text-4xl sm:text-6xl font-serif mt-5 mb-4 leading-tight drop-shadow-md shimmer-text`}
         style={{
           color: theme?.titleColor || '#ff83b6',
           fontFamily: theme?.fontTitle || 'Georgia, serif',
@@ -69,10 +71,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       {/* Subtitle */}
       {subtitle && (
         <div
-          className={`reveal reveal-delay-3 ${visible ? 'is-visible' : ''} relative max-w-[620px] mx-auto mb-6 p-5 border-l-4 rounded-r-2xl text-left shadow-lg`}
+          className={`reveal reveal-delay-3 ${visible ? 'is-visible' : ''} relative max-w-[620px] mx-auto mb-6 p-5 border-l-4 rounded-r-2xl text-left shadow-lg animate-border-pulse`}
           style={{
             background: theme?.cardBg || 'rgba(0,0,0,0.2)',
-            borderColor: theme?.accentColor || '#df2878',
+            borderColor: accentColor,
             color: theme?.textColor || '#ffffff',
           }}
         >
@@ -80,31 +82,45 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
       )}
 
-      {/* Cover Photo */}
+      {/* Cover Photo with animated glow ring */}
       <div
-        className={`reveal-scale reveal-delay-4 ${visible ? 'is-visible' : ''} relative max-w-[620px] mx-auto p-2 rounded-3xl overflow-hidden shadow-2xl`}
-        style={{
-          background: theme?.cardBg || 'rgba(255,255,255,0.1)',
-          border: `1.5px solid ${theme?.cardBorder || 'rgba(255,255,255,0.2)'}`,
-          boxShadow: `0 30px 70px rgba(0,0,0,0.5), 0 0 60px ${theme?.glowColor || 'rgba(220,40,110,0.12)'}`,
-          transition: 'transform 0.4s ease, box-shadow 0.4s ease',
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.transform = 'scale(1.012)';
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-        }}
+        className={`reveal-scale reveal-delay-4 ${visible ? 'is-visible' : ''} relative max-w-[620px] mx-auto`}
       >
-        <img
-          src={resolvedCover}
-          alt="Foto principal de la pareja"
-          className="w-full max-h-[550px] min-h-[300px] object-cover rounded-2xl bg-black"
-          style={{ transition: 'filter 0.6s ease' }}
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = '/assets/fotos/portada.svg';
+        {/* Animated glow ring */}
+        <div
+          className="absolute -inset-2 rounded-3xl animate-border-pulse pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse at center, ${glowColor} 0%, transparent 70%)`,
+            filter: 'blur(12px)',
+            zIndex: 0,
           }}
         />
+        <div
+          className="relative p-2 rounded-3xl overflow-hidden shadow-2xl"
+          style={{
+            background: theme?.cardBg || 'rgba(255,255,255,0.1)',
+            border: `1.5px solid ${theme?.cardBorder || 'rgba(255,255,255,0.2)'}`,
+            boxShadow: `0 30px 70px rgba(0,0,0,0.5), 0 0 60px ${glowColor}`,
+            transition: 'transform 0.4s ease, box-shadow 0.4s ease',
+            zIndex: 1,
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.transform = 'scale(1.012)';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+          }}
+        >
+          <img
+            src={resolvedCover}
+            alt="Foto principal de la pareja"
+            className="w-full max-h-[550px] min-h-[300px] object-cover rounded-2xl bg-black"
+            style={{ transition: 'filter 0.6s ease' }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/assets/fotos/portada.svg';
+            }}
+          />
+        </div>
       </div>
     </section>
   );

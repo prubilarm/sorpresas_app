@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   resolveGiftExperience,
   formatDateLabel,
@@ -6,11 +6,14 @@ import {
   ResolvedExperience,
 } from '@recuerdos-qr/shared';
 import { StartScreen } from './StartScreen';
+import { SongSection } from './SongSection';
 import { HeroSection } from './HeroSection';
 import { TimeCounter } from './TimeCounter';
 import { LetterSection } from './LetterSection';
 import { PhotoGallery } from './PhotoGallery';
+import { ReasonsSection } from './ReasonsSection';
 import { TimelineSection } from './TimelineSection';
+import { PromiseSection } from './PromiseSection';
 import { VideoSection } from './VideoSection';
 import { FinalSection } from './FinalSection';
 import { DynamicParticles } from './DynamicParticles';
@@ -269,17 +272,43 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
             >
               {headerTitle}
             </button>
-            <nav className="flex items-center gap-3 text-xs font-semibold opacity-90">
+            <nav className="flex items-center gap-2 text-xs font-semibold opacity-90 flex-wrap justify-end">
+              <button type="button" onClick={() => scrollToSection('cancion')} className="hover:opacity-100 transition cursor-pointer">♫</button>
               <button type="button" onClick={() => scrollToSection('inicio')} className="hover:opacity-100 transition cursor-pointer">Inicio</button>
               <button type="button" onClick={() => scrollToSection('carta')} className="hover:opacity-100 transition cursor-pointer">Carta</button>
+              <button type="button" onClick={() => scrollToSection('razones')} className="hover:opacity-100 transition cursor-pointer">Razones</button>
               <button type="button" onClick={() => scrollToSection('fotos')} className="hover:opacity-100 transition cursor-pointer">Fotos</button>
               <button type="button" onClick={() => scrollToSection('video')} className="hover:opacity-100 transition cursor-pointer">Video</button>
             </nav>
           </header>
         )}
 
-        {/* Main Content Sections — each with data-export-section for Playwright */}
+        {/* Main Content Sections */}
         <main className="space-y-6">
+
+          {/* 1 — La canción que empezó todo */}
+          <SongSection
+            songName={project.settings_json?.song_name || 'Until Found'}
+            artist={project.settings_json?.song_artist || 'Sam Smith'}
+            audioRef={bgAudioRef}
+            isPlaying={isPlayingMusic}
+            onTogglePlay={() => {
+              if (!bgAudioRef.current) return;
+              if (isPlayingMusic) {
+                bgAudioRef.current.pause();
+                setIsPlayingMusic(false);
+              } else {
+                bgAudioRef.current.play().catch(() => {});
+                setIsPlayingMusic(true);
+              }
+            }}
+            coverImageUrl={project.settings_json?.song_cover_url}
+            photoUrl={project.settings_json?.song_photo_url || heroSec?.settings_json?.cover}
+            photoCaption={project.settings_json?.song_photo_caption}
+            theme={theme}
+          />
+
+          {/* 2 — Portada + Dedicatoria */}
           <div data-export-section="hero" data-section-type="hero">
             <HeroSection
               dateLabel={startDateLabel}
@@ -292,6 +321,7 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
             />
           </div>
 
+          {/* 3 — Contador de tiempo */}
           <div data-export-section="counter" data-section-type="counter">
             <TimeCounter
               startDate={project.relationship_start_date || project.occasion_date}
@@ -305,6 +335,7 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
             />
           </div>
 
+          {/* 4 — Carta personalizada */}
           <div data-export-section="letter" data-section-type="letter">
             <LetterSection
               kicker={letterSec?.settings_json?.kicker}
@@ -317,6 +348,7 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
             />
           </div>
 
+          {/* 5 — Galería de Fotos */}
           <div data-export-section="gallery" data-section-type="gallery">
             <PhotoGallery
               mediaItems={media}
@@ -331,29 +363,23 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
             />
           </div>
 
+          {/* 6 — Lo que me gusta de ti */}
+          <ReasonsSection
+            reasons={project.settings_json?.reasons}
+            theme={theme}
+          />
+
+          {/* 7 — Nuestra historia */}
           <TimelineSection events={timeline} theme={theme} />
 
-          {/* Video Section */}
-          <div data-export-section="video" data-section-type="video">
-            <VideoSection
-              projectId={project.id}
-              title={videoSec?.title || resolved.video.title}
-              intro={videoSec?.subtitle || resolved.video.intro}
-              buttonText={videoSec?.settings_json?.buttonText || resolved.video.buttonText}
-              warningText={videoSec?.settings_json?.warningText || resolved.video.warningText}
-              videoUrl={videoSec?.settings_json?.videoUrl}
-              posterUrl={videoSec?.settings_json?.poster}
-              caption={videoSec?.content || resolved.video.caption}
-              theme={theme}
-              onVideoPlayStateChange={(isPlayingVideo) => {
-                if (bgAudioRef.current) {
-                  bgAudioRef.current.volume = isPlayingVideo ? 0.08 : 0.55;
-                }
-                onVideoPlayStateChange?.(isPlayingVideo);
-              }}
-            />
-          </div>
+          {/* 8 — Una promesa para ti */}
+          <PromiseSection
+            promise={project.settings_json?.promise}
+            title={project.settings_json?.promise_title}
+            theme={theme}
+          />
 
+          {/* 9 — Mensaje de cierre */}
           <div data-export-section="final" data-section-type="final">
             <FinalSection
               personOneName={sender}
@@ -375,6 +401,28 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
               }}
             />
           </div>
+
+          {/* 10 — Video especial (al final como remate emocional) */}
+          <div data-export-section="video" data-section-type="video">
+            <VideoSection
+              projectId={project.id}
+              title={videoSec?.title || resolved.video.title}
+              intro={videoSec?.subtitle || resolved.video.intro}
+              buttonText={videoSec?.settings_json?.buttonText || resolved.video.buttonText}
+              warningText={videoSec?.settings_json?.warningText || resolved.video.warningText}
+              videoUrl={videoSec?.settings_json?.videoUrl}
+              posterUrl={videoSec?.settings_json?.poster}
+              caption={videoSec?.content || resolved.video.caption}
+              theme={theme}
+              onVideoPlayStateChange={(isPlayingVideo) => {
+                if (bgAudioRef.current) {
+                  bgAudioRef.current.volume = isPlayingVideo ? 0.08 : 0.55;
+                }
+                onVideoPlayStateChange?.(isPlayingVideo);
+              }}
+            />
+          </div>
+
         </main>
       </div>
     </div>
