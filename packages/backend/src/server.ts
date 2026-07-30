@@ -35,13 +35,14 @@ app.use('/assets', express.static(assetsPath));
 // Setup Swagger UI Documentation
 setupSwagger(app);
 
-// Universal Top-Level Middleware: Catch ANY request to /r/* and 302 redirect to Vercel Frontend
+// Universal Top-Level Middleware: Catch ANY request containing /r/ and 302 redirect to Vercel Frontend
 app.use((req, res, next) => {
-  const reqPath = req.path || req.originalUrl || '';
-  if (reqPath.startsWith('/r/') || reqPath === '/r') {
+  const fullUrl = req.originalUrl || req.url || req.path || '';
+  if (fullUrl.includes('/r/')) {
+    const slug = fullUrl.split('/r/')[1]?.split('?')[0];
     const frontendBase = process.env.FRONTEND_URL || 'https://sorpresas-app-web.vercel.app';
-    const targetUrl = `${frontendBase.replace(/\/$/, '')}${reqPath}`;
-    console.log(`[Top-Level QR Scan 302] Intercepted ${req.method} ${reqPath} -> Redirecting to ${targetUrl}`);
+    const targetUrl = `${frontendBase.replace(/\/$/, '')}/r/${slug}`;
+    console.log(`[Top-Level QR Scan 302] Intercepted ${req.method} ${fullUrl} -> Redirecting to ${targetUrl}`);
     return res.redirect(302, targetUrl);
   }
   next();
