@@ -21,93 +21,125 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
   isAnimating,
   theme,
 }) => {
-  const isLandscape = (currentPhoto.width && currentPhoto.height && currentPhoto.width > currentPhoto.height) || false;
-  const rotationDeg = dragOffsetX * -0.015; // Subtle tilt proportional to drag
-  const absDrag = Math.abs(dragOffsetX);
-  const dragRatio = Math.min(absDrag / 300, 1);
-  const activeScale = 1 - dragRatio * 0.08;
-  const activeOpacity = 1 - dragRatio * 0.7;
-  const activeBlur = dragRatio * 4;
-
-  const isScrapbook = theme?.id === 'friendship_fun';
-  const isPolaroid = theme?.id === 'polaroid';
-  const isBW = currentPhoto.is_bw;
-
+  const isBW = (currentPhoto as any).is_bw;
   const currentUrl = resolveMediaUrl(currentPhoto.public_url);
   const prevUrl = prevPhoto ? resolveMediaUrl(prevPhoto.public_url) : '';
   const nextUrl = nextPhoto ? resolveMediaUrl(nextPhoto.public_url) : '';
 
+  // Normalised ratio [-1..1] of how far user has dragged relative to a full slide width
+  const slideWidthPx = 320; // reference width for ratio calc (doesn't need to be exact)
+  const dragRatio = Math.max(-1, Math.min(1, dragOffsetX / slideWidthPx));
+
+  // Each slide is expressed as a % of the container width so it works at any size
+  // Current slide: centered (0%) + drag offset
+  // Prev slide: -100% + drag offset (starts off left, comes into view on drag right)
+  // Next slide: +100% + drag offset (starts off right, comes into view on drag left)
+  const transition = isDragging
+    ? 'none'
+    : 'transform 0.42s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.42s ease, box-shadow 0.3s ease';
+
+  const baseCard =
+    'absolute inset-y-0 w-[85%] sm:w-[420px] max-w-full rounded-[28px] overflow-hidden border shadow-2xl select-none';
+
+  const currentIsLandscape =
+    (currentPhoto.width && currentPhoto.height && currentPhoto.width > currentPhoto.height) || false;
+
   return (
-    <div className="relative w-full max-w-[900px] h-[480px] sm:h-[560px] mx-auto flex items-center justify-center select-none overflow-hidden touch-pan-y">
-      {/* ─── PREVIOUS PHOTO (Left Insinuation) ─── */}
+    <div
+      className="relative w-full max-w-[900px] mx-auto overflow-hidden select-none"
+      style={{ height: '440px', touchAction: 'pan-y' }}
+    >
+      {/* ── PREVIOUS slide — peeks in from the LEFT on drag-right ── */}
       {prevPhoto && (
         <div
-          className="absolute z-10 w-[260px] sm:w-[340px] aspect-[4/5] rounded-3xl overflow-hidden shadow-xl pointer-events-none transition-all duration-500 ease-out border"
+          className={`${baseCard} left-1/2 -translate-x-1/2`}
           style={{
-            transform: `translateX(calc(-100% - 20px + ${dragOffsetX * 0.5}px)) scale(0.88)`,
-            opacity: 0.45 + (dragOffsetX > 0 ? dragRatio * 0.4 : 0),
-            filter: 'blur(3px)',
-            borderColor: theme?.cardBorder || 'rgba(255,255,255,0.15)',
-            background: theme?.cardBg || 'rgba(0,0,0,0.5)',
+            transform: `translateX(calc(-50% - 100% + ${dragOffsetX}px)) scale(${0.88 + dragRatio * 0.08})`,
+            opacity: 0.35 + Math.max(0, dragRatio) * 0.65,
+            transition,
+            borderColor: theme?.cardBorder || 'rgba(255,255,255,0.12)',
+            background: theme?.cardBg || 'rgba(8,3,14,0.85)',
+            zIndex: dragOffsetX > 0 ? 15 : 5,
           }}
         >
-          <img src={prevUrl} alt="" aria-hidden="true" className="w-full h-full object-cover" />
+          <img
+            src={prevUrl}
+            alt=""
+            aria-hidden="true"
+            className="w-full h-full object-cover"
+            draggable={false}
+          />
+          {/* Dim overlay */}
+          <div className="absolute inset-0 bg-black/30 pointer-events-none" />
         </div>
       )}
 
-      {/* ─── ACTIVE PHOTO (Center Stage) ─── */}
+      {/* ── CURRENT slide — center stage ── */}
       <div
-        className={`relative z-20 w-[88%] sm:w-[480px] aspect-[4/5] sm:aspect-[3/4] max-h-[520px] flex flex-col items-center justify-center p-3 sm:p-4 rounded-[32px] border shadow-2xl overflow-hidden transition-transform duration-300 ${
-          isDragging ? 'cursor-grabbing' : 'cursor-grab'
-        } ${isScrapbook || isPolaroid ? 'bg-white text-slate-800 border-white' : 'backdrop-blur-2xl'}`}
+        className={`${baseCard} left-1/2 -translate-x-1/2`}
         style={{
-          transform: `translateX(${dragOffsetX}px) rotate(${rotationDeg}deg) scale(${activeScale})`,
-          opacity: activeOpacity,
-          filter: `blur(${activeBlur}px)`,
-          transition: isDragging ? 'none' : 'transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease, filter 0.4s ease',
-          background: isScrapbook || isPolaroid ? '#ffffff' : theme?.cardBg || 'rgba(18, 8, 22, 0.88)',
-          borderColor: isScrapbook || isPolaroid ? '#ffffff' : theme?.cardBorder || 'rgba(255,255,255,0.2)',
-          boxShadow: isScrapbook || isPolaroid ? '0 25px 60px rgba(0,0,0,0.4)' : theme?.cardShadow || '0 30px 80px rgba(0,0,0,0.6)',
+          transform: `translateX(calc(-50% + ${dragOffsetX}px)) scale(${1 - Math.abs(dragRatio) * 0.05})`,
+          opacity: 1 - Math.abs(dragRatio) * 0.25,
+          transition,
+          borderColor: theme?.cardBorder || 'rgba(255,255,255,0.18)',
+          background: theme?.cardBg || 'rgba(12,5,20,0.92)',
+          boxShadow: theme?.cardShadow || '0 32px 80px rgba(0,0,0,0.75)',
+          zIndex: 20,
+          cursor: isDragging ? 'grabbing' : 'grab',
         }}
       >
-        {/* Landscape Blurred Background Overlay */}
-        {isLandscape && (
-          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* Blurred landscape background fill */}
+        {currentIsLandscape && (
+          <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
             <img
               src={currentUrl}
               alt=""
               aria-hidden="true"
-              className="w-full h-full object-cover blur-2xl opacity-40 scale-125"
+              className="w-full h-full object-cover blur-2xl opacity-40 scale-110"
             />
             <div className="absolute inset-0 bg-black/30" />
           </div>
         )}
 
-        {/* Main Photo Frame */}
-        <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden bg-black/40 flex items-center justify-center">
+        {/* Main photo */}
+        <div className="relative z-10 w-full h-full">
           <img
             src={currentUrl}
-            alt={currentPhoto.caption || 'Fotografía de recuerdo'}
-            className={`w-full h-full ${isLandscape ? 'object-contain' : 'object-cover'} transition-all duration-500 ${
-              isBW ? 'filter grayscale contrast-110' : ''
-            }`}
+            alt={currentPhoto.caption || 'Foto'}
+            className={`w-full h-full ${currentIsLandscape ? 'object-contain' : 'object-cover'} transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
+            draggable={false}
           />
         </div>
+
+        {/* Bottom gradient for caption readability */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-24 pointer-events-none z-20"
+          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%)' }}
+        />
       </div>
 
-      {/* ─── NEXT PHOTO (Right Insinuation) ─── */}
+      {/* ── NEXT slide — peeks in from the RIGHT on drag-left ── */}
       {nextPhoto && (
         <div
-          className="absolute z-10 w-[260px] sm:w-[340px] aspect-[4/5] rounded-3xl overflow-hidden shadow-xl pointer-events-none transition-all duration-500 ease-out border"
+          className={`${baseCard} left-1/2 -translate-x-1/2`}
           style={{
-            transform: `translateX(calc(100% + 20px + ${dragOffsetX * 0.5}px)) scale(0.88)`,
-            opacity: 0.45 + (dragOffsetX < 0 ? dragRatio * 0.4 : 0),
-            filter: 'blur(3px)',
-            borderColor: theme?.cardBorder || 'rgba(255,255,255,0.15)',
-            background: theme?.cardBg || 'rgba(0,0,0,0.5)',
+            transform: `translateX(calc(-50% + 100% + ${dragOffsetX}px)) scale(${0.88 + Math.abs(Math.min(0, dragRatio)) * 0.08})`,
+            opacity: 0.35 + Math.max(0, -dragRatio) * 0.65,
+            transition,
+            borderColor: theme?.cardBorder || 'rgba(255,255,255,0.12)',
+            background: theme?.cardBg || 'rgba(8,3,14,0.85)',
+            zIndex: dragOffsetX < 0 ? 15 : 5,
           }}
         >
-          <img src={nextUrl} alt="" aria-hidden="true" className="w-full h-full object-cover" />
+          <img
+            src={nextUrl}
+            alt=""
+            aria-hidden="true"
+            className="w-full h-full object-cover"
+            draggable={false}
+          />
+          {/* Dim overlay */}
+          <div className="absolute inset-0 bg-black/30 pointer-events-none" />
         </div>
       )}
     </div>

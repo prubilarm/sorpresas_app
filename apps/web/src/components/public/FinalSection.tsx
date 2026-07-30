@@ -1,5 +1,4 @@
 import React from 'react';
-import { RotateCcw } from 'lucide-react';
 import { ThemeConfig, IconType, ParticleType } from '@recuerdos-qr/shared';
 import { useInView } from '../../hooks/useAnimation';
 import { DynamicIcon } from './DynamicIcon';
@@ -111,12 +110,18 @@ export const FinalSection: React.FC<FinalSectionProps> = ({
 
         <button
           type="button"
-          onClick={onRestart}
-          className={`reveal reveal-delay-5 ${visible ? 'is-visible' : ''} inline-flex items-center gap-2 mt-4 py-2.5 px-6 rounded-full border text-sm font-semibold hover:bg-white/10 transition shadow-md`}
-          style={{ borderColor: theme?.cardBorder || 'rgba(255,255,255,0.3)', color: theme?.textColor }}
+          onClick={() => {
+            const el = document.getElementById('video');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
+          className={`reveal reveal-delay-5 ${visible ? 'is-visible' : ''} inline-flex items-center gap-2 mt-4 py-3 px-7 rounded-full text-sm font-bold transition shadow-xl hover:brightness-110 active:scale-95`}
+          style={{
+            background: `linear-gradient(135deg, ${accentColor}, #f43f5e)`,
+            color: '#ffffff',
+            boxShadow: `0 8px 28px ${glowColor}`,
+          }}
         >
-          <RotateCcw className="w-4 h-4" />
-          Volver al comienzo
+          🎬 Ver el video especial
         </button>
       </div>
     </section>

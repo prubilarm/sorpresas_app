@@ -190,6 +190,28 @@ export const VideoSection: React.FC<VideoSectionProps> = ({
           {caption && <p className="mt-4 text-center font-serif italic text-sm text-pink-200/90">{caption}</p>}
         </div>
       )}
+
+      {/* Restart — only shown after the video section closes */}
+      <div className="mt-10 flex flex-col items-center gap-2">
+        <div className="flex gap-3 text-xl" style={{ color: theme?.accentColor || '#ec4899' }}>
+          {['♥', '♥', '♥'].map((h, i) => (
+            <span key={i} className="animate-beat" style={{ animationDelay: `${i * 0.2}s` }}>{h}</span>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="mt-2 inline-flex items-center gap-2 py-2.5 px-6 rounded-full border text-sm font-semibold hover:bg-white/10 transition"
+          style={{
+            borderColor: theme?.cardBorder || 'rgba(255,255,255,0.25)',
+            color: theme?.textColor || 'rgba(255,255,255,0.7)',
+          }}
+        >
+          ↩ Volver al comienzo
+        </button>
+      </div>
     </section>
   );
 };
