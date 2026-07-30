@@ -50,11 +50,7 @@ qrRouter.get('/:id/qr', async (req, res) => {
   } else if (explicitBaseUrl) {
     destinationUrl = `${explicitBaseUrl.replace(/\/$/, '')}/r/${project.slug}`;
   } else {
-    const frontendBase =
-      process.env.FRONTEND_URL ||
-      req.headers.origin ||
-      (req.headers.referer ? new URL(req.headers.referer).origin : null) ||
-      'https://sorpresas-app-web.vercel.app';
+    const frontendBase = process.env.FRONTEND_URL || 'https://sorpresas-app-web.vercel.app';
     destinationUrl = `${frontendBase.replace(/\/$/, '')}/r/${project.slug}`;
   }
 

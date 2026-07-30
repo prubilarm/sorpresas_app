@@ -35,6 +35,14 @@ app.use('/assets', express.static(assetsPath));
 // Setup Swagger UI Documentation
 setupSwagger(app);
 
+// Direct Redirect Catch-All for Mobile Camera Scans on Railway Backend (/r/:slug -> Vercel Frontend)
+app.get('/r/:slug', (req, res) => {
+  const frontendBase = process.env.FRONTEND_URL || 'https://sorpresas-app-web.vercel.app';
+  const targetUrl = `${frontendBase.replace(/\/$/, '')}/r/${req.params.slug}`;
+  console.log(`[Redirect] Redirecting mobile scan for slug '${req.params.slug}' to ${targetUrl}`);
+  return res.redirect(302, targetUrl);
+});
+
 // Mount API Routers
 app.use('/api/auth', authRouter);
 app.use('/api/projects', projectsRouter);
@@ -44,7 +52,7 @@ app.use('/api/projects', cardRouter);
 app.use('/api/public', publicRouter);
 app.use('/api/analytics', analyticsRouter);
 
-// Serve Web Frontend Production Build (apps/web/dist) if built
+// Serve Web Frontend Production Build (apps/web/dist) if built locally
 const webDistPath = path.join(__dirname, '../../../apps/web/dist');
 if (fs.existsSync(webDistPath)) {
   app.use(express.static(webDistPath));
