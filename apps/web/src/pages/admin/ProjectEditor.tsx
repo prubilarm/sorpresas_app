@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchProjectById, updateProject, uploadMediaFile, deleteMediaFile, createProjectExport, fetchProjectExports, deleteProjectExport, resolveMediaUrl, getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl } from '../../services/api';
-import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2, Copy, ExternalLink, Printer, Share2, Palette, Edit3, Layout, Maximize2, Shield } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2, Copy, ExternalLink, Printer, Share2, Palette, Edit3, Layout, Maximize2, Shield, Move } from 'lucide-react';
 import { THEMES, ThemeId, generateDefaultGiftPreset } from '@recuerdos-qr/shared';
 import { NumberPicker } from '../../components/admin/NumberPicker';
 import { MemoryStoryGallery } from '../../components/public/gallery/MemoryStoryGallery';
 import { CinematicMemoryGallery } from '../../components/public/gallery/CinematicMemoryGallery';
 import { GiftExperience } from '../../components/public/GiftExperience';
 import { QrAndCardModal, CARD_STYLES, FONT_OPTIONS, QR_POSITIONS, BORDER_STYLES } from '../../components/admin/QrAndCardModal';
+import { CardCanvasEditor, CustomCanvasConfig, DEFAULT_CANVAS_CONFIG } from '../../components/admin/CardCanvasEditor';
 
 const compressImageFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -86,6 +87,9 @@ export const ProjectEditor: React.FC = () => {
   const [editorCardQrSize, setEditorCardQrSize] = useState<string>('medium');
   const [editorCardBorderStyle, setEditorCardBorderStyle] = useState<string>('double_gold');
 
+  const [editorCardMode, setEditorCardMode] = useState<'preset' | 'canva'>('canva');
+  const [editorCardCanvasConfig, setEditorCardCanvasConfig] = useState<CustomCanvasConfig>(DEFAULT_CANVAS_CONFIG);
+
   const [exportsList, setExportsList] = useState<any[]>([]);
   const [exportFormat, setExportFormat] = useState<'9:16' | '4:5' | '1:1' | '16:9'>('9:16');
   const [exportProfile, setExportProfile] = useState<'reel_short' | 'reel_social' | 'full_experience'>('full_experience');
@@ -120,6 +124,7 @@ export const ProjectEditor: React.FC = () => {
         if (cardSettings.titleSize) setEditorCardTitleSize(cardSettings.titleSize);
         if (cardSettings.qrSize) setEditorCardQrSize(cardSettings.qrSize);
         if (cardSettings.borderStyle) setEditorCardBorderStyle(cardSettings.borderStyle);
+        if (cardSettings.custom_canvas) setEditorCardCanvasConfig(cardSettings.custom_canvas);
 
         if (cardSettings.names) {
           setEditorCardNames(cardSettings.names);
@@ -187,6 +192,7 @@ export const ProjectEditor: React.FC = () => {
           titleSize: editorCardTitleSize,
           qrSize: editorCardQrSize,
           borderStyle: editorCardBorderStyle,
+          custom_canvas: editorCardCanvasConfig,
         },
       };
 
@@ -1967,11 +1973,43 @@ export const ProjectEditor: React.FC = () => {
 
               {/* 1. Tarjeta de Presentación Imprimible (9x9 cm) */}
               <div className="space-y-6">
+                {/* Mode Switcher */}
+                <div className="flex items-center justify-between bg-slate-950 p-2 rounded-2xl border border-slate-800">
+                  <span className="text-xs font-bold text-slate-300 px-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-pink-400" />
+                    Modo de Diseño de la Tarjeta:
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditorCardMode('canva')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                        editorCardMode === 'canva'
+                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg'
+                          : 'bg-slate-900 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Move className="w-3.5 h-3.5" />
+                      🖐️ Edición Libre Canva (Drag &amp; Drop)
+                    </button>
+                    <button
+                      onClick={() => setEditorCardMode('preset')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                        editorCardMode === 'preset'
+                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg'
+                          : 'bg-slate-900 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Layout className="w-3.5 h-3.5" />
+                      📐 Plantillas Automáticas
+                    </button>
+                  </div>
+                </div>
+
                 {/* Style Selector */}
                 <div className="space-y-3">
                   <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
                     <Palette className="w-4 h-4 text-pink-400" />
-                    Selecciona 1 de los 5 Estilos de Tarjeta Elegantes
+                    Paleta &amp; Estilo Elegante
                   </label>
 
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -2026,9 +2064,48 @@ export const ProjectEditor: React.FC = () => {
                     titleSize: editorCardTitleSize,
                     qrSize: editorCardQrSize,
                     borderStyle: editorCardBorderStyle,
+                    canvasData: editorCardMode === 'canva' ? editorCardCanvasConfig : undefined,
                   });
 
                   const currentQrUrl = getQrCodeUrl(project.id, 'png', currentTheme.qrDark, currentTheme.qrLight, project.slug);
+
+                  if (editorCardMode === 'canva') {
+                    return (
+                      <div className="bg-slate-950/70 p-6 rounded-3xl border border-slate-800 space-y-4">
+                        <CardCanvasEditor
+                          selectedTheme={currentTheme}
+                          selectedFont={currentFont}
+                          kickerText={editorCardKicker || 'HECHO ESPECIALMENTE PARA'}
+                          namesText={editorCardNames || `${project.sender_name || 'Remitente'} & ${project.recipient_name || 'Destinatario'}`}
+                          messageText={editorCardMessage || 'Escanea este código...'}
+                          pngQrUrl={currentQrUrl}
+                          config={editorCardCanvasConfig}
+                          onChange={(newCfg) => setEditorCardCanvasConfig(newCfg)}
+                        />
+
+                        <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                          <a
+                            href={currentPdfUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-bold text-white text-sm shadow-xl hover:brightness-110 active:scale-95 transition"
+                          >
+                            <Download className="w-4 h-4" />
+                            Descargar Tarjeta PDF Personalizada (9x9 cm)
+                          </a>
+                          <a
+                            href={currentPdfUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition"
+                          >
+                            <Printer className="w-4 h-4" />
+                            Imprimir
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  }
 
                   let nameSizeClass = 'text-lg';
                   if (editorCardTitleSize === 'small') nameSizeClass = 'text-sm';

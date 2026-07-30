@@ -115,16 +115,29 @@ cardRouter.get('/:id/card', async (req, res) => {
   const recipient = project.recipient_name || project.person_two_name || 'Destinatario';
   const namesText = (req.query.names as string) || savedSettings.names || `${sender} & ${recipient}`;
 
-  // Layout & Typography Customization Options
+  // Layout Options
   const qrPosition = (req.query.qrPosition as string) || savedSettings.qrPosition || 'bottom_right';
   const titleSizeOption = (req.query.titleSize as string) || savedSettings.titleSize || 'medium';
   const qrSizeOption = (req.query.qrSize as string) || savedSettings.qrSize || 'medium';
   const borderStyle = (req.query.borderStyle as string) || savedSettings.borderStyle || 'double_gold';
 
+  // Custom Drag-and-Drop Canvas Data (if provided)
+  let customCanvas: any = null;
+  if (req.query.canvasData) {
+    try {
+      customCanvas = JSON.parse(req.query.canvasData as string);
+    } catch (e) {}
+  } else if (savedSettings.custom_canvas) {
+    customCanvas = savedSettings.custom_canvas;
+  }
+
   // Calculate Pt Sizes
   let nameFontSize = 15;
   if (titleSizeOption === 'small') nameFontSize = 13;
   if (titleSizeOption === 'large') nameFontSize = 19;
+
+  let kickerFontSize = 6.5;
+  let messageFontSize = 7.5;
 
   let qrSizePt = 88; // 3.1cm
   if (qrSizeOption === 'small') qrSizePt = 70; // 2.5cm
@@ -174,7 +187,7 @@ cardRouter.get('/:id/card', async (req, res) => {
       margin: 1,
     });
 
-    // 4. Calculate Coordinates (X, Y) based on qrPosition
+    // 4. Calculate Coordinates (X, Y)
     let qrX = sizePt - qrSizePt - 20;
     let qrY = (sizePt - qrSizePt) / 2 + 5;
 
@@ -183,38 +196,67 @@ cardRouter.get('/:id/card', async (req, res) => {
     let messageX = 22, messageY = 115, messageWidth = 125;
     let textAlign: 'left' | 'center' | 'right' = 'left';
 
-    if (qrPosition === 'center_large') {
-      textAlign = 'center';
-      kickerX = 20; kickerY = 22; kickerWidth = sizePt - 40;
-      namesX = 20; namesY = 33; namesWidth = sizePt - 40;
-      qrX = (sizePt - qrSizePt) / 2;
-      qrY = 75;
-      messageX = 20; messageY = 75 + qrSizePt + 10; messageWidth = sizePt - 40;
-    } else if (qrPosition === 'bottom_center') {
-      textAlign = 'center';
-      kickerX = 20; kickerY = 24; kickerWidth = sizePt - 40;
-      namesX = 20; namesY = 36; namesWidth = sizePt - 40;
-      messageX = 20; messageY = 78; messageWidth = sizePt - 40;
-      qrX = (sizePt - qrSizePt) / 2;
-      qrY = sizePt - qrSizePt - 16;
-    } else if (qrPosition === 'top_right') {
-      qrX = sizePt - qrSizePt - 18;
-      qrY = 20;
-      kickerX = 22; kickerY = 24; kickerWidth = sizePt - qrSizePt - 46;
-      namesX = 22; namesY = 36; namesWidth = sizePt - qrSizePt - 46;
-      messageX = 22; messageY = 135; messageWidth = sizePt - 44;
-    } else if (qrPosition === 'left_split') {
-      qrX = 18;
-      qrY = (sizePt - qrSizePt) / 2;
-      kickerX = 18 + qrSizePt + 14; kickerY = 28; kickerWidth = sizePt - qrSizePt - 44;
-      namesX = 18 + qrSizePt + 14; namesY = 40; namesWidth = sizePt - qrSizePt - 44;
-      messageX = 18 + qrSizePt + 14; messageY = 120; messageWidth = sizePt - qrSizePt - 44;
+    // If Free-Form Drag & Drop coordinates are present
+    if (customCanvas && customCanvas.enabled) {
+      if (customCanvas.qr) {
+        qrX = (customCanvas.qr.x / 100) * sizePt;
+        qrY = (customCanvas.qr.y / 100) * sizePt;
+        if (customCanvas.qr.sizeCm) {
+          qrSizePt = (customCanvas.qr.sizeCm / 9.0) * sizePt;
+        }
+      }
+      if (customCanvas.kicker) {
+        kickerX = (customCanvas.kicker.x / 100) * sizePt;
+        kickerY = (customCanvas.kicker.y / 100) * sizePt;
+        if (customCanvas.kicker.fontSize) kickerFontSize = customCanvas.kicker.fontSize;
+      }
+      if (customCanvas.names) {
+        namesX = (customCanvas.names.x / 100) * sizePt;
+        namesY = (customCanvas.names.y / 100) * sizePt;
+        if (customCanvas.names.fontSize) nameFontSize = customCanvas.names.fontSize;
+        if (customCanvas.names.width) namesWidth = (customCanvas.names.width / 100) * sizePt;
+      }
+      if (customCanvas.message) {
+        messageX = (customCanvas.message.x / 100) * sizePt;
+        messageY = (customCanvas.message.y / 100) * sizePt;
+        if (customCanvas.message.fontSize) messageFontSize = customCanvas.message.fontSize;
+        if (customCanvas.message.width) messageWidth = (customCanvas.message.width / 100) * sizePt;
+      }
+    } else {
+      // Standard Presets
+      if (qrPosition === 'center_large') {
+        textAlign = 'center';
+        kickerX = 20; kickerY = 22; kickerWidth = sizePt - 40;
+        namesX = 20; namesY = 33; namesWidth = sizePt - 40;
+        qrX = (sizePt - qrSizePt) / 2;
+        qrY = 75;
+        messageX = 20; messageY = 75 + qrSizePt + 10; messageWidth = sizePt - 40;
+      } else if (qrPosition === 'bottom_center') {
+        textAlign = 'center';
+        kickerX = 20; kickerY = 24; kickerWidth = sizePt - 40;
+        namesX = 20; namesY = 36; namesWidth = sizePt - 40;
+        messageX = 20; messageY = 78; messageWidth = sizePt - 40;
+        qrX = (sizePt - qrSizePt) / 2;
+        qrY = sizePt - qrSizePt - 16;
+      } else if (qrPosition === 'top_right') {
+        qrX = sizePt - qrSizePt - 18;
+        qrY = 20;
+        kickerX = 22; kickerY = 24; kickerWidth = sizePt - qrSizePt - 46;
+        namesX = 22; namesY = 36; namesWidth = sizePt - qrSizePt - 46;
+        messageX = 22; messageY = 135; messageWidth = sizePt - 44;
+      } else if (qrPosition === 'left_split') {
+        qrX = 18;
+        qrY = (sizePt - qrSizePt) / 2;
+        kickerX = 18 + qrSizePt + 14; kickerY = 28; kickerWidth = sizePt - qrSizePt - 44;
+        namesX = 18 + qrSizePt + 14; namesY = 40; namesWidth = sizePt - qrSizePt - 44;
+        messageX = 18 + qrSizePt + 14; messageY = 120; messageWidth = sizePt - qrSizePt - 44;
+      }
     }
 
     // Render Kicker
     doc
       .fillColor(theme.kickerColor)
-      .fontSize(6.5)
+      .fontSize(kickerFontSize)
       .text(kickerText, kickerX, kickerY, { characterSpacing: 1.2, width: kickerWidth, align: textAlign });
 
     // Render Names
@@ -226,7 +268,7 @@ cardRouter.get('/:id/card', async (req, res) => {
     // Render Message
     doc
       .fillColor(theme.messageColor)
-      .fontSize(7.5)
+      .fontSize(messageFontSize)
       .text(messageText, messageX, messageY, {
         width: messageWidth,
         lineGap: 2.5,

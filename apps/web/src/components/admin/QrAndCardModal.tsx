@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, QrCode, FileText, Copy, Check, Download, ExternalLink, Sparkles, Printer, Share2, Palette, Edit3, Layout, Type, Maximize2, Shield } from 'lucide-react';
+import { X, QrCode, FileText, Copy, Check, Download, ExternalLink, Sparkles, Printer, Share2, Palette, Edit3, Layout, Type, Maximize2, Shield, Move } from 'lucide-react';
 import { getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl } from '../../services/api';
+import { CardCanvasEditor, CustomCanvasConfig, DEFAULT_CANVAS_CONFIG } from './CardCanvasEditor';
 
 interface QrAndCardModalProps {
   project: any;
@@ -144,6 +145,11 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
   const [cardNames, setCardNames] = useState<string>(savedCardSettings.names || initialNames);
 
   // Advanced Layout Studio states
+  const [editorMode, setEditorMode] = useState<'preset' | 'canva'>('canva');
+  const [canvasConfig, setCanvasConfig] = useState<CustomCanvasConfig>(
+    savedCardSettings.custom_canvas || DEFAULT_CANVAS_CONFIG
+  );
+
   const [cardQrPosition, setCardQrPosition] = useState<string>(savedCardSettings.qrPosition || 'bottom_right');
   const [cardFontFamily, setCardFontFamily] = useState<string>(savedCardSettings.fontFamily || 'playfair');
   const [cardTitleSize, setCardTitleSize] = useState<string>(savedCardSettings.titleSize || 'medium');
@@ -165,6 +171,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
     titleSize: cardTitleSize,
     qrSize: cardQrSize,
     borderStyle: cardBorderStyle,
+    canvasData: editorMode === 'canva' ? canvasConfig : undefined,
   });
 
   const pngQrUrl = getQrCodeUrl(project.id, 'png', selectedTheme.qrDark, selectedTheme.qrLight, project.slug);
@@ -269,11 +276,43 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {activeTab === 'card' && (
             <div className="space-y-6">
+              {/* Mode Switcher: Canva Drag & Drop vs Automatic Presets */}
+              <div className="flex items-center justify-between bg-slate-950 p-2 rounded-2xl border border-slate-800">
+                <span className="text-xs font-bold text-slate-300 px-3 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-pink-400" />
+                  Modo de Diseño de la Tarjeta:
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setEditorMode('canva')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                      editorMode === 'canva'
+                        ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg'
+                        : 'bg-slate-900 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Move className="w-3.5 h-3.5" />
+                    🖐️ Edición Libre Canva (Drag &amp; Drop)
+                  </button>
+                  <button
+                    onClick={() => setEditorMode('preset')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                      editorMode === 'preset'
+                        ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg'
+                        : 'bg-slate-900 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Layout className="w-3.5 h-3.5" />
+                    📐 Plantillas Automáticas
+                  </button>
+                </div>
+              </div>
+
               {/* 1. Theme Preset Selector */}
               <div className="space-y-3">
                 <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
                   <Palette className="w-4 h-4 text-pink-400" />
-                  1. Paleta &amp; Estilo de Tarjeta
+                  Paleta &amp; Estilo Elegante
                 </label>
 
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -313,8 +352,43 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                 </div>
               </div>
 
-              {/* 2. Interactive Mockup + Advanced Layout Controls */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start bg-slate-950/60 p-6 rounded-2xl border border-slate-800">
+              {/* 2. Interactive Canva Drag & Drop Editor vs Preset Layout Controls */}
+              {editorMode === 'canva' ? (
+                <div className="bg-slate-950/70 p-6 rounded-3xl border border-slate-800 space-y-4">
+                  <CardCanvasEditor
+                    selectedTheme={selectedTheme}
+                    selectedFont={selectedFont}
+                    kickerText={cardKicker}
+                    namesText={cardNames}
+                    messageText={cardMessage}
+                    pngQrUrl={pngQrUrl}
+                    config={canvasConfig}
+                    onChange={(newCfg) => setCanvasConfig(newCfg)}
+                  />
+
+                  <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                    <a
+                      href={pdfUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-bold text-white text-sm shadow-xl hover:brightness-110 active:scale-95 transition"
+                    >
+                      <Download className="w-4 h-4" />
+                      Descargar Tarjeta PDF Personalizada (9x9 cm)
+                    </a>
+                    <a
+                      href={pdfUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition"
+                    >
+                      <Printer className="w-4 h-4" />
+                      Imprimir
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start bg-slate-950/60 p-6 rounded-2xl border border-slate-800">
                 {/* Physical 9x9cm Card Dynamic Mockup */}
                 <div className="md:col-span-6 flex flex-col items-center justify-center space-y-3">
                   <div
@@ -594,7 +668,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                     </a>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 

@@ -18,6 +18,7 @@ export function getPrintableCardUrl(
     titleSize?: string;
     qrSize?: string;
     borderStyle?: string;
+    canvasData?: any;
   }
 ): string {
   const params = new URLSearchParams();
@@ -33,6 +34,7 @@ export function getPrintableCardUrl(
   if (options?.titleSize) params.append('titleSize', options.titleSize);
   if (options?.qrSize) params.append('qrSize', options.qrSize);
   if (options?.borderStyle) params.append('borderStyle', options.borderStyle);
+  if (options?.canvasData) params.append('canvasData', JSON.stringify(options.canvasData));
 
   const queryStr = params.toString();
   return `${API_BASE}/projects/${projectId}/card${queryStr ? '?' + queryStr : ''}`;
