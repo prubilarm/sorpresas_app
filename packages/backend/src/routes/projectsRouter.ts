@@ -593,12 +593,22 @@ projectsRouter.get('/:id/exports/:exportId/download', (req, res) => {
   const job = (db.getState.exports || []).find((j) => j.id === req.params.exportId && j.project_id === project.id);
   if (!job || !job.output_url) return res.status(404).json({ error: 'Archivo de exportación no encontrado o no finalizado' });
 
-  const localFilePath = path.join(__dirname, '../../', job.output_url.replace('/uploads/', 'uploads/'));
-  if (!fs.existsSync(localFilePath)) return res.status(404).json({ error: 'El archivo MP4 no existe en el servidor' });
+  // Clean relative path from output_url
+  const relativePath = job.output_url
+    .replace(/^https?:\/\/[^/]+/, '')
+    .replace(/^\/?uploads\//, '');
+
+  const localFilePath = path.join(__dirname, '../../uploads', relativePath);
+  if (!fs.existsSync(localFilePath)) {
+    console.error(`Export file not found at: ${localFilePath}`);
+    return res.status(404).json({ error: 'El archivo MP4 no existe en el servidor' });
+  }
 
   const recipientName = project.recipient_name || project.person_two_name || 'destinatario';
   const filename = `experiencia-completa-${recipientName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${job.format.replace(':', 'x')}.mp4`;
 
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   return res.download(localFilePath, filename);
 });
 

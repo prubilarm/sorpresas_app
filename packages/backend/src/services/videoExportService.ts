@@ -98,7 +98,7 @@ export async function processVideoExportJob(jobId: string, config: VideoExportCo
     // 2. Playwright capture — opens real /r/[slug]?capture=true page
     updateJob({ status: 'rendering', progress_percent: 20 });
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://sorpresas-app-web.vercel.app';
 
     const { framesListPath, estimatedDuration } = await captureGiftExperience({
       slug: project.slug,
