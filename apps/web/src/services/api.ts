@@ -5,6 +5,17 @@ const API_BASE =
     ? 'http://localhost:4000/api'
     : 'https://recuerdos-qrweb-production.up.railway.app/api';
 
+export function resolveMediaUrl(url?: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  const backendServer = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:4000'
+    : 'https://recuerdos-qrweb-production.up.railway.app';
+  return `${backendServer}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
 export async function fetchPublicGift(slug: string) {
   const res = await fetch(`${API_BASE}/public/r/${slug}`);
   const data = await res.json();

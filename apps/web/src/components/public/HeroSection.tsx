@@ -2,6 +2,7 @@ import React from 'react';
 import { ThemeConfig, IconType } from '@recuerdos-qr/shared';
 import { useInView } from '../../hooks/useAnimation';
 import { DynamicIcon } from './DynamicIcon';
+import { resolveMediaUrl } from '../../services/api';
 
 interface HeroSectionProps {
   dateLabel: string;
@@ -23,6 +24,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   theme,
 }) => {
   const [ref, visible] = useInView(0.1);
+  const resolvedCover = resolveMediaUrl(coverUrl) || '/assets/fotos/portada.svg';
 
   return (
     <section
@@ -95,7 +97,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         }}
       >
         <img
-          src={coverUrl || '/assets/fotos/portada.svg'}
+          src={resolvedCover}
           alt="Foto principal de la pareja"
           className="w-full max-h-[550px] min-h-[300px] object-cover rounded-2xl bg-black"
           style={{ transition: 'filter 0.6s ease' }}

@@ -2,6 +2,7 @@ import React from 'react';
 import { MediaItem, ThemeConfig } from '@recuerdos-qr/shared';
 import { MemoryDecorations } from './MemoryDecorations';
 import { MemoryCaption } from './MemoryCaption';
+import { resolveMediaUrl } from '../../../services/api';
 
 interface MemorySlideProps {
   photo: MediaItem;
@@ -19,6 +20,7 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
   theme,
 }) => {
   const isPolaroidTheme = theme?.id === 'polaroid';
+  const resolvedPhotoUrl = resolveMediaUrl(photo.public_url);
 
   // Determine composition type A, B, C, D, E
   const isLast = index === total - 1;
@@ -38,17 +40,19 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
 
   // Pre-calculate slight rotation for Polaroid/Printed types (-1.2deg to +1.2deg)
   const rotationDegrees =
-    sceneType === 'B' || isPolaroidTheme
-      ? (index % 2 === 0 ? 1.2 : -1.2)
-      : 0;
+    sceneType === 'B' || isPolaroidTheme ? ((index % 3) - 1) * 1.2 : 0;
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center p-3 sm:p-5 select-none overflow-hidden">
+    <div
+      className={`relative w-full h-full flex flex-col items-center justify-center transition-all duration-700 ${
+        sceneType === 'C' ? 'p-2 sm:p-4' : 'p-3 sm:p-6'
+      }`}
+    >
       {/* ─── SCENE TYPE C: Landscape Photo with Blurred Background ─── */}
       {sceneType === 'C' && (
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <img
-            src={photo.public_url}
+            src={resolvedPhotoUrl}
             alt=""
             aria-hidden="true"
             className="w-full h-full object-cover blur-2xl opacity-35 scale-125"
@@ -64,9 +68,9 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
 
       {/* ─── Main Photo Card Frame ─── */}
       <div
-        className={`relative z-10 w-full max-w-[420px] aspect-[4/5] sm:aspect-[3/4] max-h-[580px] flex flex-col justify-between p-3 sm:p-4 transition-all duration-300 shadow-2xl rounded-3xl border overflow-hidden ${
+        className={`relative flex flex-col w-full h-full p-3 sm:p-4 rounded-3xl transition-all duration-500 overflow-hidden ${
           sceneType === 'B' || isPolaroidTheme
-            ? 'bg-white text-slate-800 border-white'
+            ? 'bg-white border-8 border-white shadow-2xl text-slate-900'
             : 'backdrop-blur-xl'
         }`}
         style={{
@@ -101,7 +105,7 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
         {/* Photo Container */}
         <div className="relative flex-1 w-full rounded-2xl overflow-hidden bg-black/40 flex items-center justify-center">
           <img
-            src={photo.public_url}
+            src={resolvedPhotoUrl}
             alt={photo.caption || `Fotografía ${index + 1}`}
             className={`w-full h-full object-contain transition-all duration-700 ${
               sceneType === 'D' ? 'filter grayscale contrast-105' : ''

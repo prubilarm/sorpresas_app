@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchProjectById, updateProject, uploadMediaFile, deleteMediaFile, createProjectExport, fetchProjectExports, deleteProjectExport } from '../../services/api';
+import { fetchProjectById, updateProject, uploadMediaFile, deleteMediaFile, createProjectExport, fetchProjectExports, deleteProjectExport, resolveMediaUrl } from '../../services/api';
 import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2 } from 'lucide-react';
 import { THEMES, ThemeId, generateDefaultGiftPreset } from '@recuerdos-qr/shared';
 import { NumberPicker } from '../../components/admin/NumberPicker';
 import { MemoryStoryGallery } from '../../components/public/gallery/MemoryStoryGallery';
 import { CinematicMemoryGallery } from '../../components/public/gallery/CinematicMemoryGallery';
 import { GiftExperience } from '../../components/public/GiftExperience';
+
+const readFileAsDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 export const ProjectEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -157,38 +166,65 @@ export const ProjectEditor: React.FC = () => {
     const files = Array.from(e.target.files || []);
     if (!files.length || !project) return;
 
-    // Reset input so the same file can be re-selected later
     e.target.value = '';
 
     setUploading(true);
     try {
       for (const file of files) {
-        const res = await uploadMediaFile(project.id, file);
-        setMedia((prev) => [...prev, res.media]);
+        let fileDataUrl = '';
+        if (file.type.startsWith('image/')) {
+          try {
+            fileDataUrl = await readFileAsDataUrl(file);
+          } catch (e) {}
+        }
+
+        let mediaItem: any = null;
+        try {
+          const res = await uploadMediaFile(project.id, file);
+          mediaItem = res.media;
+        } catch (serverErr) {
+          console.warn('Server upload warning, using local Data URL:', serverErr);
+          if (fileDataUrl) {
+            mediaItem = {
+              id: `med_local_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+              project_id: project.id,
+              media_type: 'image',
+              public_url: fileDataUrl,
+              original_filename: file.name,
+              position: media.length + 1,
+            };
+          } else {
+            throw serverErr;
+          }
+        }
+
+        const finalUrl = resolveMediaUrl(mediaItem.public_url) || fileDataUrl;
+        mediaItem.public_url = finalUrl;
+
+        setMedia((prev) => [...prev, mediaItem]);
 
         if (targetSection === 'hero') {
-          // Only use the first file for the hero cover
           setSections((prev) =>
             prev.map((sec) =>
               sec.section_type === 'hero'
-                ? { ...sec, settings_json: { ...sec.settings_json, cover: res.media.public_url } }
+                ? { ...sec, settings_json: { ...sec.settings_json, cover: finalUrl } }
                 : sec
             )
           );
-          break; // Only one cover photo
-        } else if (res.media.media_type === 'video' || targetSection === 'video') {
+          break;
+        } else if (mediaItem.media_type === 'video' || targetSection === 'video') {
           setSections((prev) =>
             prev.map((sec) =>
               sec.section_type === 'video'
-                ? { ...sec, settings_json: { ...sec.settings_json, videoUrl: res.media.public_url } }
+                ? { ...sec, settings_json: { ...sec.settings_json, videoUrl: finalUrl } }
                 : sec
             )
           );
-          break; // Only one video
+          break;
         }
       }
     } catch (err: any) {
-      alert(err.message || 'Error al subir el archivo.');
+      alert(err.message || 'Error al procesar el archivo.');
     } finally {
       setUploading(false);
     }

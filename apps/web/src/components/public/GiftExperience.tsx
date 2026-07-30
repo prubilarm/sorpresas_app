@@ -43,7 +43,8 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
   // Initialize audio for background playback
   useEffect(() => {
     if (typeof window !== 'undefined' && mode === 'public') {
-      const audio = new Audio('/uploads/until_found.mp3');
+      const audioSource = project.settings_json?.music_url || '/until_found.mp3';
+      const audio = new Audio(audioSource);
       audio.loop = true;
       audio.volume = captureMode ? 0 : 0.55; // silent in capture mode (Playwright can't record audio)
       bgAudioRef.current = audio;
@@ -53,7 +54,7 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
         bgAudioRef.current.pause();
       }
     };
-  }, [mode, captureMode]);
+  }, [mode, captureMode, project.settings_json?.music_url]);
 
   // Auto-start in capture mode after 2.5s (StartScreen stays visible for that time)
   useEffect(() => {
@@ -233,9 +234,19 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
             onStart={() => {
               window.scrollTo(0, 0);
               if (bgAudioRef.current) {
-                bgAudioRef.current.play().catch(() => {});
+                bgAudioRef.current.play().then(() => {
+                  setIsPlayingMusic(true);
+                }).catch((err) => {
+                  console.warn('Audio play failed initially, registering touch handler:', err);
+                  const playOnInteraction = () => {
+                    bgAudioRef.current?.play().then(() => setIsPlayingMusic(true)).catch(() => {});
+                    window.removeEventListener('click', playOnInteraction);
+                    window.removeEventListener('touchstart', playOnInteraction);
+                  };
+                  window.addEventListener('click', playOnInteraction);
+                  window.addEventListener('touchstart', playOnInteraction);
+                });
               }
-              setIsPlayingMusic(true);
               setStarted(true);
             }}
           />
