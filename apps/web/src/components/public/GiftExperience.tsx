@@ -303,7 +303,7 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
               }
             }}
             coverImageUrl={project.settings_json?.song_cover_url}
-            photoUrl={project.settings_json?.song_photo_url || heroSec?.settings_json?.cover}
+            photoUrl={project.settings_json?.song_photo_url}
             photoCaption={project.settings_json?.song_photo_caption}
             theme={theme}
           />
