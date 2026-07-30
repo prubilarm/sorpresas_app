@@ -21,103 +21,71 @@ export interface CardThemeConfig {
 export const fontFontStyles: Record<string, CardThemeConfig> = {
   midnight_velvet: {
     id: 'midnight_velvet',
-    name: 'Terciopelo Nocturno & Oro',
-    bgColor: '#1a050f',
-    borderColor: '#d4af37',
+    name: '👑 Real Borgoña & Pan de Oro',
+    bgColor: '#1a030c',
+    borderColor: '#e5c158',
     innerBorderColor: '#7a5b13',
-    kickerColor: '#e2b857',
+    kickerColor: '#f3d375',
     namesColor: '#ffffff',
-    messageColor: '#f4cedd',
+    messageColor: '#fce7f0',
     qrDark: '#27000f',
     qrLight: '#ffffff',
   },
   rose_onyx: {
     id: 'rose_onyx',
-    name: 'Oro Rosa & Ónix',
-    bgColor: '#0d0f12',
-    borderColor: '#e86b8b',
+    name: '💎 Ónix Joya & Oro Rosa',
+    bgColor: '#0c0d12',
+    borderColor: '#f4a2b8',
     innerBorderColor: '#7c3144',
-    kickerColor: '#f4a298',
+    kickerColor: '#f8c2d1',
     namesColor: '#ffffff',
-    messageColor: '#f8d3d9',
+    messageColor: '#fce8ef',
     qrDark: '#1e1b26',
     qrLight: '#ffffff',
   },
   minimal_linen: {
     id: 'minimal_linen',
-    name: 'Lino Minimalista & Blanco Puro',
-    bgColor: '#faf8f5',
-    borderColor: '#a88647',
+    name: '📜 Lino Marfil & Oro Imperial',
+    bgColor: '#f7f4ed',
+    borderColor: '#b89242',
     innerBorderColor: '#d4c4a8',
     kickerColor: '#8c6c2e',
-    namesColor: '#1a1a1a',
-    messageColor: '#4a4a4a',
-    qrDark: '#1a1a1a',
+    namesColor: '#1c1917',
+    messageColor: '#44403c',
+    qrDark: '#1c1917',
     qrLight: '#ffffff',
   },
   emerald_passion: {
     id: 'emerald_passion',
-    name: 'Esmeralda Real & Champaña',
-    bgColor: '#051f15',
-    borderColor: '#d4af37',
+    name: '🌿 Esmeralda Real & Champaña',
+    bgColor: '#031c13',
+    borderColor: '#f5e6be',
     innerBorderColor: '#5c4811',
-    kickerColor: '#f3e5ab',
+    kickerColor: '#f5e6be',
     namesColor: '#ffffff',
-    messageColor: '#d1e8df',
-    qrDark: '#051f15',
+    messageColor: '#d1f2e6',
+    qrDark: '#031c13',
     qrLight: '#ffffff',
   },
   celestial_night: {
     id: 'celestial_night',
-    name: 'Noche Celestial & Plateado',
-    bgColor: '#060b1e',
-    borderColor: '#d1d5db',
+    name: '🌌 Noche Celestial & Plata Líquida',
+    bgColor: '#040817',
+    borderColor: '#e2e8f0',
     innerBorderColor: '#4b5563',
-    kickerColor: '#e5e7eb',
+    kickerColor: '#cbd5e1',
     namesColor: '#ffffff',
-    messageColor: '#dbeafe',
-    qrDark: '#060b1e',
+    messageColor: '#e2e8f0',
+    qrDark: '#040817',
     qrLight: '#ffffff',
   },
 };
 
-/**
- * @openapi
- * /api/projects/{id}/card:
- *   get:
- *     summary: Generar tarjeta imprimible (PDF de 9x9cm) de alta resolución con 5 temas elegantes
- *     tags: [Tarjeta Imprimible]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *       - in: query
- *         name: styleId
- *         schema:
- *           type: string
- *       - in: query
- *         name: kicker
- *         schema:
- *           type: string
- *       - in: query
- *         name: message
- *         schema:
- *           type: string
- *       - in: query
- *         name: targetUrl
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Documento PDF de alta resolución devuelto para impresión
- */
 cardRouter.get('/:id/card', async (req, res) => {
   const project = db.getState.projects.find((p) => p.id === req.params.id);
   if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
 
-  // Resolve target URL to encode in QR (defaults to production Vercel app URL)
+  // Target URL to encode in QR
   const explicitTargetUrl = req.query.targetUrl as string;
   const explicitBaseUrl = req.query.baseUrl as string;
 
@@ -135,17 +103,32 @@ cardRouter.get('/:id/card', async (req, res) => {
     publicUrl = `${frontendBase.replace(/\/$/, '')}/r/${project.slug}`;
   }
 
-  // Resolve custom texts and theme style
+  // Resolve saved settings & query parameters
   const savedSettings = (project as any).settings_json?.card_settings || {};
   const styleId = (req.query.styleId as string) || savedSettings.styleId || 'midnight_velvet';
   const theme = fontFontStyles[styleId] || fontFontStyles.midnight_velvet;
 
   const kickerText = ((req.query.kicker as string) || savedSettings.kicker || 'HECHO ESPECIALMENTE PARA').toUpperCase();
   const messageText = (req.query.message as string) || savedSettings.message || 'Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.';
-  
+
   const sender = project.sender_name || project.person_one_name || 'Remitente';
   const recipient = project.recipient_name || project.person_two_name || 'Destinatario';
   const namesText = (req.query.names as string) || savedSettings.names || `${sender} & ${recipient}`;
+
+  // Layout & Typography Customization Options
+  const qrPosition = (req.query.qrPosition as string) || savedSettings.qrPosition || 'bottom_right';
+  const titleSizeOption = (req.query.titleSize as string) || savedSettings.titleSize || 'medium';
+  const qrSizeOption = (req.query.qrSize as string) || savedSettings.qrSize || 'medium';
+  const borderStyle = (req.query.borderStyle as string) || savedSettings.borderStyle || 'double_gold';
+
+  // Calculate Pt Sizes
+  let nameFontSize = 15;
+  if (titleSizeOption === 'small') nameFontSize = 13;
+  if (titleSizeOption === 'large') nameFontSize = 19;
+
+  let qrSizePt = 88; // 3.1cm
+  if (qrSizeOption === 'small') qrSizePt = 70; // 2.5cm
+  if (qrSizeOption === 'large') qrSizePt = 112; // 4.0cm
 
   try {
     // 9cm in points = (9 / 2.54) * 72 = 255.118 pt
@@ -163,46 +146,27 @@ cardRouter.get('/:id/card', async (req, res) => {
     // 1. Background Fill
     doc.rect(0, 0, sizePt, sizePt).fill(theme.bgColor);
 
-    // 2. Double Line Luxury Borders
-    const m1 = 10;
-    doc.lineWidth(1.2).rect(m1, m1, sizePt - m1 * 2, sizePt - m1 * 2).stroke(theme.borderColor);
+    // 2. Borders & Filigranas
+    if (borderStyle !== 'no_border') {
+      const m1 = 10;
+      doc.lineWidth(1.2).rect(m1, m1, sizePt - m1 * 2, sizePt - m1 * 2).stroke(theme.borderColor);
 
-    const m2 = 14;
-    doc.lineWidth(0.5).rect(m2, m2, sizePt - m2 * 2, sizePt - m2 * 2).stroke(theme.innerBorderColor);
+      if (borderStyle === 'double_gold' || borderStyle === 'ornate_filigree') {
+        const m2 = 14;
+        doc.lineWidth(0.5).rect(m2, m2, sizePt - m2 * 2, sizePt - m2 * 2).stroke(theme.innerBorderColor);
+      }
 
-    // Corner Ornaments (Small Diamonds)
-    const drawDiamond = (cx: number, cy: number, r: number) => {
-      doc
-        .polygon([cx, cy - r], [cx + r, cy], [cx, cy + r], [cx - r, cy])
-        .fill(theme.borderColor);
-    };
-    drawDiamond(m1, m1, 3);
-    drawDiamond(sizePt - m1, m1, 3);
-    drawDiamond(m1, sizePt - m1, 3);
-    drawDiamond(sizePt - m1, sizePt - m1, 3);
+      // Corner Ornaments
+      const drawDiamond = (cx: number, cy: number, r: number) => {
+        doc.polygon([cx, cy - r], [cx + r, cy], [cx, cy + r], [cx - r, cy]).fill(theme.borderColor);
+      };
+      drawDiamond(m1, m1, 3);
+      drawDiamond(sizePt - m1, m1, 3);
+      drawDiamond(m1, sizePt - m1, 3);
+      drawDiamond(sizePt - m1, sizePt - m1, 3);
+    }
 
-    // 3. Header Kicker
-    doc
-      .fillColor(theme.kickerColor)
-      .fontSize(6.5)
-      .text(kickerText, 22, 24, { characterSpacing: 1.2, width: 130 });
-
-    // 4. Main Title Names
-    doc
-      .fillColor(theme.namesColor)
-      .fontSize(15)
-      .text(namesText, 22, 36, { width: 135, lineGap: 2 });
-
-    // 5. Dedication Message
-    doc
-      .fillColor(theme.messageColor)
-      .fontSize(7.5)
-      .text(messageText, 22, 115, {
-        width: 125,
-        lineGap: 2.5,
-      });
-
-    // 6. High Resolution QR Image Buffer (89 pt x 89 pt = 3.15 cm x 3.15 cm)
+    // 3. Generate QR Image Buffer
     const qrBuffer = await QRCode.toBuffer(publicUrl, {
       type: 'png',
       width: 500,
@@ -210,14 +174,68 @@ cardRouter.get('/:id/card', async (req, res) => {
       margin: 1,
     });
 
-    const qrSizePt = 88; // 3.1 cm
-    const qrX = sizePt - qrSizePt - 20;
-    const qrY = (sizePt - qrSizePt) / 2 + 5;
+    // 4. Calculate Coordinates (X, Y) based on qrPosition
+    let qrX = sizePt - qrSizePt - 20;
+    let qrY = (sizePt - qrSizePt) / 2 + 5;
 
-    // Draw card container frame behind QR
+    let kickerX = 22, kickerY = 24, kickerWidth = 130;
+    let namesX = 22, namesY = 36, namesWidth = 135;
+    let messageX = 22, messageY = 115, messageWidth = 125;
+    let textAlign: 'left' | 'center' | 'right' = 'left';
+
+    if (qrPosition === 'center_large') {
+      textAlign = 'center';
+      kickerX = 20; kickerY = 22; kickerWidth = sizePt - 40;
+      namesX = 20; namesY = 33; namesWidth = sizePt - 40;
+      qrX = (sizePt - qrSizePt) / 2;
+      qrY = 75;
+      messageX = 20; messageY = 75 + qrSizePt + 10; messageWidth = sizePt - 40;
+    } else if (qrPosition === 'bottom_center') {
+      textAlign = 'center';
+      kickerX = 20; kickerY = 24; kickerWidth = sizePt - 40;
+      namesX = 20; namesY = 36; namesWidth = sizePt - 40;
+      messageX = 20; messageY = 78; messageWidth = sizePt - 40;
+      qrX = (sizePt - qrSizePt) / 2;
+      qrY = sizePt - qrSizePt - 16;
+    } else if (qrPosition === 'top_right') {
+      qrX = sizePt - qrSizePt - 18;
+      qrY = 20;
+      kickerX = 22; kickerY = 24; kickerWidth = sizePt - qrSizePt - 46;
+      namesX = 22; namesY = 36; namesWidth = sizePt - qrSizePt - 46;
+      messageX = 22; messageY = 135; messageWidth = sizePt - 44;
+    } else if (qrPosition === 'left_split') {
+      qrX = 18;
+      qrY = (sizePt - qrSizePt) / 2;
+      kickerX = 18 + qrSizePt + 14; kickerY = 28; kickerWidth = sizePt - qrSizePt - 44;
+      namesX = 18 + qrSizePt + 14; namesY = 40; namesWidth = sizePt - qrSizePt - 44;
+      messageX = 18 + qrSizePt + 14; messageY = 120; messageWidth = sizePt - qrSizePt - 44;
+    }
+
+    // Render Kicker
+    doc
+      .fillColor(theme.kickerColor)
+      .fontSize(6.5)
+      .text(kickerText, kickerX, kickerY, { characterSpacing: 1.2, width: kickerWidth, align: textAlign });
+
+    // Render Names
+    doc
+      .fillColor(theme.namesColor)
+      .fontSize(nameFontSize)
+      .text(namesText, namesX, namesY, { width: namesWidth, lineGap: 2, align: textAlign });
+
+    // Render Message
+    doc
+      .fillColor(theme.messageColor)
+      .fontSize(7.5)
+      .text(messageText, messageX, messageY, {
+        width: messageWidth,
+        lineGap: 2.5,
+        align: textAlign,
+      });
+
+    // Render QR Container & Image
     doc.roundedRect(qrX - 4, qrY - 4, qrSizePt + 8, qrSizePt + 8, 4).fill(theme.qrLight);
     doc.lineWidth(0.8).roundedRect(qrX - 4, qrY - 4, qrSizePt + 8, qrSizePt + 8, 4).stroke(theme.borderColor);
-
     doc.image(qrBuffer, qrX, qrY, { width: qrSizePt, height: qrSizePt });
 
     doc.end();

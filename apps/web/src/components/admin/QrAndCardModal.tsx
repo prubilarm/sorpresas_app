@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, QrCode, FileText, Copy, Check, Download, ExternalLink, Sparkles, Printer, Share2, Palette, Edit3, Heart } from 'lucide-react';
+import { X, QrCode, FileText, Copy, Check, Download, ExternalLink, Sparkles, Printer, Share2, Palette, Edit3, Layout, Type, Maximize2, Shield } from 'lucide-react';
 import { getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl } from '../../services/api';
 
 interface QrAndCardModalProps {
@@ -21,7 +21,6 @@ export interface CardStylePreset {
   qrLight: string;
   badgeBg: string;
   fontTitleClass: string;
-  crestType: 'royal_gold' | 'rose_diamond' | 'imperial_seal' | 'emerald_wreath' | 'starlight';
 }
 
 export const CARD_STYLES: CardStylePreset[] = [
@@ -39,7 +38,6 @@ export const CARD_STYLES: CardStylePreset[] = [
     qrLight: '#ffffff',
     badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
     fontTitleClass: "font-['Playfair_Display'] italic font-bold",
-    crestType: 'royal_gold',
   },
   {
     id: 'rose_onyx',
@@ -55,7 +53,6 @@ export const CARD_STYLES: CardStylePreset[] = [
     qrLight: '#ffffff',
     badgeBg: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
     fontTitleClass: "font-['Cinzel'] tracking-wider font-bold",
-    crestType: 'rose_diamond',
   },
   {
     id: 'minimal_linen',
@@ -71,7 +68,6 @@ export const CARD_STYLES: CardStylePreset[] = [
     qrLight: '#ffffff',
     badgeBg: 'bg-amber-100 text-amber-900 border-amber-300',
     fontTitleClass: "font-['Cormorant_Garamond'] font-bold text-xl",
-    crestType: 'imperial_seal',
   },
   {
     id: 'emerald_passion',
@@ -87,7 +83,6 @@ export const CARD_STYLES: CardStylePreset[] = [
     qrLight: '#ffffff',
     badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
     fontTitleClass: "font-['Playfair_Display'] font-bold",
-    crestType: 'emerald_wreath',
   },
   {
     id: 'celestial_night',
@@ -103,8 +98,30 @@ export const CARD_STYLES: CardStylePreset[] = [
     qrLight: '#ffffff',
     badgeBg: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
     fontTitleClass: "font-['Cinzel'] tracking-widest font-bold",
-    crestType: 'starlight',
   },
+];
+
+export const FONT_OPTIONS = [
+  { id: 'playfair', name: 'Playfair Display (Romántica)', class: "font-['Playfair_Display']" },
+  { id: 'cinzel', name: 'Cinzel Royal (Imperial)', class: "font-['Cinzel'] tracking-wider" },
+  { id: 'cormorant', name: 'Cormorant Garamond (Alta Costura)', class: "font-['Cormorant_Garamond']" },
+  { id: 'great_vibes', name: 'Great Vibes (Manuscrita Cursiva)', class: "font-['Great_Vibes'] text-xl" },
+  { id: 'clean', name: 'Inter Clean (Moderna & Minimalista)', class: 'font-sans font-semibold' },
+];
+
+export const QR_POSITIONS = [
+  { id: 'bottom_right', name: 'Abajo Derecha', desc: 'Diseño clásico de regalo' },
+  { id: 'center_large', name: 'Gigante Centro', desc: 'Minimalista enfoque en escáner' },
+  { id: 'bottom_center', name: 'Abajo Centro', desc: 'Textos superiores centrados' },
+  { id: 'top_right', name: 'Arriba Derecha', desc: 'Nombres a la izquierda' },
+  { id: 'left_split', name: 'Columna Izquierda', desc: 'QR a la izq, texto a la der' },
+];
+
+export const BORDER_STYLES = [
+  { id: 'double_gold', name: 'Marco Doble Dorado' },
+  { id: 'ornate_filigree', name: 'Filigranas Barrocas' },
+  { id: 'minimal_line', name: 'Línea Fina Minimalista' },
+  { id: 'no_border', name: 'Sin Marco' },
 ];
 
 export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose }) => {
@@ -126,7 +143,16 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
   );
   const [cardNames, setCardNames] = useState<string>(savedCardSettings.names || initialNames);
 
+  // Advanced Layout Studio states
+  const [cardQrPosition, setCardQrPosition] = useState<string>(savedCardSettings.qrPosition || 'bottom_right');
+  const [cardFontFamily, setCardFontFamily] = useState<string>(savedCardSettings.fontFamily || 'playfair');
+  const [cardTitleSize, setCardTitleSize] = useState<string>(savedCardSettings.titleSize || 'medium');
+  const [cardQrSize, setCardQrSize] = useState<string>(savedCardSettings.qrSize || 'medium');
+  const [cardBorderStyle, setCardBorderStyle] = useState<string>(savedCardSettings.borderStyle || 'double_gold');
+
   const selectedTheme = CARD_STYLES.find((s) => s.id === cardStyleId) || CARD_STYLES[0];
+  const selectedFont = FONT_OPTIONS.find((f) => f.id === cardFontFamily) || FONT_OPTIONS[0];
+
   const publicUrl = getPublicGiftUrl(project.slug);
 
   const pdfUrl = getPrintableCardUrl(project.id, project.slug, {
@@ -134,6 +160,11 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
     kicker: cardKicker,
     message: cardMessage,
     names: cardNames,
+    qrPosition: cardQrPosition,
+    fontFamily: cardFontFamily,
+    titleSize: cardTitleSize,
+    qrSize: cardQrSize,
+    borderStyle: cardBorderStyle,
   });
 
   const pngQrUrl = getQrCodeUrl(project.id, 'png', selectedTheme.qrDark, selectedTheme.qrLight, project.slug);
@@ -170,9 +201,19 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
     }
   };
 
+  // Dynamic Tailwind helper for Title Size
+  let nameSizeClass = 'text-lg';
+  if (cardTitleSize === 'small') nameSizeClass = 'text-sm';
+  if (cardTitleSize === 'large') nameSizeClass = 'text-xl sm:text-2xl';
+
+  // Dynamic Tailwind helper for QR Size
+  let qrSizeClass = 'w-20 h-20';
+  if (cardQrSize === 'small') qrSizeClass = 'w-16 h-16';
+  if (cardQrSize === 'large') qrSizeClass = 'w-24 h-24 sm:w-28 sm:h-28';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-fadeIn select-none">
-      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="relative w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-slate-950/70 border-b border-slate-800">
           <div className="flex items-center gap-3">
@@ -181,7 +222,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
             </div>
             <div>
               <h2 className="text-lg font-bold text-white leading-tight">
-                Código QR &amp; Tarjetas Elegantes (9x9 cm)
+                Estudio de Tarjetas Físicas &amp; Código QR
               </h2>
               <p className="text-xs text-slate-400">
                 {project.internal_name} ({cardNames})
@@ -208,7 +249,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
             }`}
           >
             <FileText className="w-4 h-4" />
-            Personalizar Tarjeta Física (9x9 cm)
+            Estudio de Maquetación de Tarjeta (9x9 cm)
           </button>
 
           <button
@@ -228,11 +269,11 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {activeTab === 'card' && (
             <div className="space-y-6">
-              {/* 1. Theme Style Selector (5 Luxury Presets) */}
+              {/* 1. Theme Preset Selector */}
               <div className="space-y-3">
                 <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
                   <Palette className="w-4 h-4 text-pink-400" />
-                  Elige 1 de los 5 Estilos de Tarjeta Elegantes
+                  1. Paleta &amp; Estilo de Tarjeta
                 </label>
 
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -272,113 +313,263 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                 </div>
               </div>
 
-              {/* 2. Live Interactive Mockup + Text Controls */}
+              {/* 2. Interactive Mockup + Advanced Layout Controls */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start bg-slate-950/60 p-6 rounded-2xl border border-slate-800">
-                {/* Physical 9x9cm Card Interactive Visual Frame */}
-                <div className="md:col-span-6 flex flex-col items-center justify-center">
+                {/* Physical 9x9cm Card Dynamic Mockup */}
+                <div className="md:col-span-6 flex flex-col items-center justify-center space-y-3">
                   <div
-                    className="relative w-72 h-72 rounded-2xl p-5 shadow-2xl flex flex-col justify-between overflow-hidden border transition-all duration-500"
+                    className="relative w-80 h-80 rounded-2xl p-5 shadow-2xl flex flex-col justify-between overflow-hidden border transition-all duration-500"
                     style={{
                       background: selectedTheme.bgStyle,
-                      borderColor: selectedTheme.borderColor,
-                      boxShadow: `0 20px 50px rgba(0,0,0,0.6), inset 0 0 0 1px ${selectedTheme.innerBorderColor}`,
+                      borderColor: cardBorderStyle === 'no_border' ? 'transparent' : selectedTheme.borderColor,
+                      boxShadow: `0 25px 60px rgba(0,0,0,0.65), inset 0 0 0 1px ${selectedTheme.innerBorderColor}`,
                     }}
                   >
                     {/* Double Line Border Overlay */}
-                    <div
-                      className="absolute inset-2.5 pointer-events-none rounded-xl border"
-                      style={{ borderColor: selectedTheme.innerBorderColor }}
-                    />
+                    {cardBorderStyle !== 'no_border' && (
+                      <div
+                        className="absolute inset-2.5 pointer-events-none rounded-xl border"
+                        style={{ borderColor: selectedTheme.innerBorderColor }}
+                      />
+                    )}
 
-                    {/* Corner Diamond Accents */}
-                    <div className="absolute top-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
-                    <div className="absolute top-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
-                    <div className="absolute bottom-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
-                    <div className="absolute bottom-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
+                    {/* Corner Ornaments */}
+                    {cardBorderStyle !== 'no_border' && (
+                      <>
+                        <div className="absolute top-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
+                        <div className="absolute top-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
+                        <div className="absolute bottom-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
+                        <div className="absolute bottom-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
+                      </>
+                    )}
 
-                    {/* Card Content Top Header */}
-                    <div className="space-y-1 z-10">
-                      <span
-                        className="block uppercase text-[8.5px] tracking-widest font-bold"
-                        style={{ color: selectedTheme.kickerColor }}
-                      >
-                        {cardKicker}
-                      </span>
-                      <h3
-                        className={`text-lg leading-tight truncate ${selectedTheme.fontTitleClass}`}
-                        style={{ color: selectedTheme.namesColor }}
-                      >
-                        {cardNames}
-                      </h3>
+                    {/* DYNAMIC LAYOUT RENDERING BASED ON qrPosition */}
+                    {cardQrPosition === 'center_large' ? (
+                      <div className="flex flex-col items-center justify-between h-full z-10 text-center">
+                        <div className="space-y-1">
+                          <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: selectedTheme.kickerColor }}>
+                            {cardKicker}
+                          </span>
+                          <h3 className={`font-bold leading-tight ${nameSizeClass} ${selectedFont.class}`} style={{ color: selectedTheme.namesColor }}>
+                            {cardNames}
+                          </h3>
+                        </div>
+
+                        <div className={`${qrSizeClass} bg-white p-1 rounded-xl shadow-inner flex items-center justify-center my-2 border`} style={{ borderColor: selectedTheme.borderColor }}>
+                          <img src={pngQrUrl} alt="QR Tarjeta" className="w-full h-full object-contain" />
+                        </div>
+
+                        <p className="text-[10px] leading-snug font-serif italic max-w-[90%]" style={{ color: selectedTheme.messageColor }}>
+                          {cardMessage}
+                        </p>
+                      </div>
+                    ) : cardQrPosition === 'bottom_center' ? (
+                      <div className="flex flex-col items-center justify-between h-full z-10 text-center">
+                        <div className="space-y-1">
+                          <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: selectedTheme.kickerColor }}>
+                            {cardKicker}
+                          </span>
+                          <h3 className={`font-bold leading-tight ${nameSizeClass} ${selectedFont.class}`} style={{ color: selectedTheme.namesColor }}>
+                            {cardNames}
+                          </h3>
+                          <p className="text-[10px] leading-snug font-serif italic max-w-[90%] pt-1" style={{ color: selectedTheme.messageColor }}>
+                            {cardMessage}
+                          </p>
+                        </div>
+
+                        <div className={`${qrSizeClass} bg-white p-1 rounded-xl shadow-inner flex items-center justify-center border`} style={{ borderColor: selectedTheme.borderColor }}>
+                          <img src={pngQrUrl} alt="QR Tarjeta" className="w-full h-full object-contain" />
+                        </div>
+                      </div>
+                    ) : cardQrPosition === 'top_right' ? (
+                      <div className="flex flex-col justify-between h-full z-10">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1 flex-1">
+                            <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: selectedTheme.kickerColor }}>
+                              {cardKicker}
+                            </span>
+                            <h3 className={`font-bold leading-tight ${nameSizeClass} ${selectedFont.class}`} style={{ color: selectedTheme.namesColor }}>
+                              {cardNames}
+                            </h3>
+                          </div>
+                          <div className={`${qrSizeClass} bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border`} style={{ borderColor: selectedTheme.borderColor }}>
+                            <img src={pngQrUrl} alt="QR Tarjeta" className="w-full h-full object-contain" />
+                          </div>
+                        </div>
+
+                        <p className="text-[10px] leading-snug font-serif italic pt-2" style={{ color: selectedTheme.messageColor }}>
+                          {cardMessage}
+                        </p>
+                      </div>
+                    ) : cardQrPosition === 'left_split' ? (
+                      <div className="flex items-center gap-4 h-full z-10">
+                        <div className={`${qrSizeClass} bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border`} style={{ borderColor: selectedTheme.borderColor }}>
+                          <img src={pngQrUrl} alt="QR Tarjeta" className="w-full h-full object-contain" />
+                        </div>
+                        <div className="space-y-2 flex-1">
+                          <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: selectedTheme.kickerColor }}>
+                            {cardKicker}
+                          </span>
+                          <h3 className={`font-bold leading-tight ${nameSizeClass} ${selectedFont.class}`} style={{ color: selectedTheme.namesColor }}>
+                            {cardNames}
+                          </h3>
+                          <p className="text-[10px] leading-snug font-serif italic" style={{ color: selectedTheme.messageColor }}>
+                            {cardMessage}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Standard bottom_right */
+                      <div className="flex flex-col justify-between h-full z-10">
+                        <div className="space-y-1">
+                          <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: selectedTheme.kickerColor }}>
+                            {cardKicker}
+                          </span>
+                          <h3 className={`font-bold leading-tight ${nameSizeClass} ${selectedFont.class}`} style={{ color: selectedTheme.namesColor }}>
+                            {cardNames}
+                          </h3>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <p className="text-[10px] leading-snug font-serif italic flex-1" style={{ color: selectedTheme.messageColor }}>
+                            {cardMessage}
+                          </p>
+                          <div className={`${qrSizeClass} bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border`} style={{ borderColor: selectedTheme.borderColor }}>
+                            <img src={pngQrUrl} alt="QR Tarjeta" className="w-full h-full object-contain" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <span className="text-[11px] text-slate-500 font-mono">
+                    Escala física real: 9 x 9 cm (300 DPI Vectorial PDF)
+                  </span>
+                </div>
+
+                {/* Controls Column */}
+                <div className="md:col-span-6 space-y-5">
+                  {/* 1. QR Position Layout Selector */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Layout className="w-4 h-4 text-pink-400" />
+                      Disposición &amp; Posición del QR
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {QR_POSITIONS.map((pos) => (
+                        <button
+                          key={pos.id}
+                          onClick={() => setCardQrPosition(pos.id)}
+                          className={`p-2 rounded-xl border text-left transition cursor-pointer ${
+                            cardQrPosition === pos.id
+                              ? 'border-pink-500 bg-pink-500/10 text-white font-bold'
+                              : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          <span className="block text-xs">{pos.name}</span>
+                          <span className="block text-[9px] text-slate-500 font-normal">{pos.desc}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 2. Typography Selector */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Type className="w-4 h-4 text-pink-400" />
+                      Fuente Tipográfica
+                    </label>
+                    <select
+                      value={cardFontFamily}
+                      onChange={(e) => setCardFontFamily(e.target.value)}
+                      className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
+                    >
+                      {FONT_OPTIONS.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 3. Font & QR Size Controls */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center gap-1">
+                        <Maximize2 className="w-3.5 h-3.5" /> Tamaño del Título
+                      </label>
+                      <div className="flex rounded-xl bg-slate-900 border border-slate-700 p-1 gap-1">
+                        {['small', 'medium', 'large'].map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => setCardTitleSize(s)}
+                            className={`flex-1 py-1 text-[10px] font-bold uppercase rounded-lg transition cursor-pointer ${
+                              cardTitleSize === s ? 'bg-pink-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            {s === 'small' ? 'Pequ' : s === 'medium' ? 'Med' : 'Gran'}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
-                    {/* Card Content Bottom Dedication & QR */}
-                    <div className="flex items-center gap-3 z-10">
-                      <p
-                        className="text-[10px] leading-snug font-serif italic flex-1"
-                        style={{ color: selectedTheme.messageColor }}
-                      >
-                        {cardMessage}
-                      </p>
-
-                      <div
-                        className="w-20 h-20 bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border"
-                        style={{ borderColor: selectedTheme.borderColor }}
-                      >
-                        <img src={pngQrUrl} alt="QR Tarjeta" className="w-full h-full object-contain" />
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center gap-1">
+                        <QrCode className="w-3.5 h-3.5" /> Tamaño del QR
+                      </label>
+                      <div className="flex rounded-xl bg-slate-900 border border-slate-700 p-1 gap-1">
+                        {['small', 'medium', 'large'].map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => setCardQrSize(s)}
+                            className={`flex-1 py-1 text-[10px] font-bold uppercase rounded-lg transition cursor-pointer ${
+                              cardQrSize === s ? 'bg-pink-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            {s === 'small' ? '2.5cm' : s === 'medium' ? '3.2cm' : '4.0cm'}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   </div>
 
-                  <span className="text-[11px] text-slate-500 mt-2 font-mono">
-                    Escala física real: 9 x 9 cm (300 DPI Vectorial)
-                  </span>
-                </div>
-
-                {/* Text Editing Controls */}
-                <div className="md:col-span-6 space-y-4">
-                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                    <Edit3 className="w-4 h-4 text-pink-400" />
-                    Personalizar Contenidos de la Tarjeta
-                  </h4>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-1">
-                      Encabezado Superior
+                  {/* 4. Text Contents Form */}
+                  <div className="space-y-3 pt-1">
+                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Edit3 className="w-4 h-4 text-pink-400" />
+                      Contenidos de Texto
                     </label>
-                    <input
-                      type="text"
-                      value={cardKicker}
-                      onChange={(e) => setCardKicker(e.target.value)}
-                      placeholder="Ej: HECHO ESPECIALMENTE PARA"
-                      className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
-                    />
-                  </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-1">
-                      Nombres Principales
-                    </label>
-                    <input
-                      type="text"
-                      value={cardNames}
-                      onChange={(e) => setCardNames(e.target.value)}
-                      placeholder="Ej: Hans & Tamara"
-                      className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
-                    />
-                  </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Encabezado</label>
+                        <input
+                          type="text"
+                          value={cardKicker}
+                          onChange={(e) => setCardKicker(e.target.value)}
+                          className="w-full p-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Nombres</label>
+                        <input
+                          type="text"
+                          value={cardNames}
+                          onChange={(e) => setCardNames(e.target.value)}
+                          className="w-full p-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
+                        />
+                      </div>
+                    </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-1">
-                      Mensaje Dedicatorio / Texto del Escáner
-                    </label>
-                    <textarea
-                      value={cardMessage}
-                      onChange={(e) => setCardMessage(e.target.value)}
-                      rows={3}
-                      placeholder="Ej: Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor."
-                      className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-serif italic"
-                    />
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Mensaje Escáner</label>
+                      <textarea
+                        value={cardMessage}
+                        onChange={(e) => setCardMessage(e.target.value)}
+                        rows={2}
+                        className="w-full p-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-serif italic"
+                      />
+                    </div>
                   </div>
 
                   {/* Actions */}

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchProjectById, updateProject, uploadMediaFile, deleteMediaFile, createProjectExport, fetchProjectExports, deleteProjectExport, resolveMediaUrl, getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl } from '../../services/api';
-import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2, Copy, ExternalLink, Printer, Share2, Palette, Edit3 } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2, Copy, ExternalLink, Printer, Share2, Palette, Edit3, Layout, Maximize2, Shield } from 'lucide-react';
 import { THEMES, ThemeId, generateDefaultGiftPreset } from '@recuerdos-qr/shared';
 import { NumberPicker } from '../../components/admin/NumberPicker';
 import { MemoryStoryGallery } from '../../components/public/gallery/MemoryStoryGallery';
 import { CinematicMemoryGallery } from '../../components/public/gallery/CinematicMemoryGallery';
 import { GiftExperience } from '../../components/public/GiftExperience';
-import { QrAndCardModal, CARD_STYLES } from '../../components/admin/QrAndCardModal';
+import { QrAndCardModal, CARD_STYLES, FONT_OPTIONS, QR_POSITIONS, BORDER_STYLES } from '../../components/admin/QrAndCardModal';
 
 const compressImageFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -80,6 +80,12 @@ export const ProjectEditor: React.FC = () => {
   );
   const [editorCardNames, setEditorCardNames] = useState<string>('');
 
+  const [editorCardQrPosition, setEditorCardQrPosition] = useState<string>('bottom_right');
+  const [editorCardFontFamily, setEditorCardFontFamily] = useState<string>('playfair');
+  const [editorCardTitleSize, setEditorCardTitleSize] = useState<string>('medium');
+  const [editorCardQrSize, setEditorCardQrSize] = useState<string>('medium');
+  const [editorCardBorderStyle, setEditorCardBorderStyle] = useState<string>('double_gold');
+
   const [exportsList, setExportsList] = useState<any[]>([]);
   const [exportFormat, setExportFormat] = useState<'9:16' | '4:5' | '1:1' | '16:9'>('9:16');
   const [exportProfile, setExportProfile] = useState<'reel_short' | 'reel_social' | 'full_experience'>('full_experience');
@@ -109,6 +115,12 @@ export const ProjectEditor: React.FC = () => {
         if (cardSettings.styleId) setEditorCardStyleId(cardSettings.styleId);
         if (cardSettings.kicker) setEditorCardKicker(cardSettings.kicker);
         if (cardSettings.message) setEditorCardMessage(cardSettings.message);
+        if (cardSettings.qrPosition) setEditorCardQrPosition(cardSettings.qrPosition);
+        if (cardSettings.fontFamily) setEditorCardFontFamily(cardSettings.fontFamily);
+        if (cardSettings.titleSize) setEditorCardTitleSize(cardSettings.titleSize);
+        if (cardSettings.qrSize) setEditorCardQrSize(cardSettings.qrSize);
+        if (cardSettings.borderStyle) setEditorCardBorderStyle(cardSettings.borderStyle);
+
         if (cardSettings.names) {
           setEditorCardNames(cardSettings.names);
         } else {
@@ -170,6 +182,11 @@ export const ProjectEditor: React.FC = () => {
           kicker: editorCardKicker,
           message: editorCardMessage,
           names: editorCardNames,
+          qrPosition: editorCardQrPosition,
+          fontFamily: editorCardFontFamily,
+          titleSize: editorCardTitleSize,
+          qrSize: editorCardQrSize,
+          borderStyle: editorCardBorderStyle,
         },
       };
 
@@ -1997,95 +2014,290 @@ export const ProjectEditor: React.FC = () => {
                 {/* Live Card Mockup & Customization Inputs */}
                 {(() => {
                   const currentTheme = CARD_STYLES.find((s) => s.id === editorCardStyleId) || CARD_STYLES[0];
+                  const currentFont = FONT_OPTIONS.find((f) => f.id === editorCardFontFamily) || FONT_OPTIONS[0];
+
                   const currentPdfUrl = getPrintableCardUrl(project.id, project.slug, {
                     styleId: editorCardStyleId,
                     kicker: editorCardKicker,
                     message: editorCardMessage,
                     names: editorCardNames || `${project.sender_name || 'Remitente'} & ${project.recipient_name || 'Destinatario'}`,
+                    qrPosition: editorCardQrPosition,
+                    fontFamily: editorCardFontFamily,
+                    titleSize: editorCardTitleSize,
+                    qrSize: editorCardQrSize,
+                    borderStyle: editorCardBorderStyle,
                   });
+
                   const currentQrUrl = getQrCodeUrl(project.id, 'png', currentTheme.qrDark, currentTheme.qrLight, project.slug);
+
+                  let nameSizeClass = 'text-lg';
+                  if (editorCardTitleSize === 'small') nameSizeClass = 'text-sm';
+                  if (editorCardTitleSize === 'large') nameSizeClass = 'text-xl sm:text-2xl';
+
+                  let qrSizeClass = 'w-20 h-20';
+                  if (editorCardQrSize === 'small') qrSizeClass = 'w-16 h-16';
+                  if (editorCardQrSize === 'large') qrSizeClass = 'w-24 h-24 sm:w-28 sm:h-28';
+
+                  const namesText = editorCardNames || `${project.sender_name || 'Remitente'} & ${project.recipient_name || 'Destinatario'}`;
 
                   return (
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start bg-slate-950/60 p-6 rounded-2xl border border-slate-800">
                       {/* Physical Card Mockup */}
-                      <div className="md:col-span-6 flex flex-col items-center justify-center">
+                      <div className="md:col-span-6 flex flex-col items-center justify-center space-y-3">
                         <div
-                          className="relative w-72 h-72 rounded-2xl p-5 shadow-2xl flex flex-col justify-between overflow-hidden border transition-all duration-500"
+                          className="relative w-80 h-80 rounded-2xl p-5 shadow-2xl flex flex-col justify-between overflow-hidden border transition-all duration-500"
                           style={{
                             background: currentTheme.bgStyle,
-                            borderColor: currentTheme.borderColor,
-                            boxShadow: `0 20px 50px rgba(0,0,0,0.6), inset 0 0 0 1px ${currentTheme.innerBorderColor}`,
+                            borderColor: editorCardBorderStyle === 'no_border' ? 'transparent' : currentTheme.borderColor,
+                            boxShadow: `0 25px 60px rgba(0,0,0,0.65), inset 0 0 0 1px ${currentTheme.innerBorderColor}`,
                           }}
                         >
-                          <div
-                            className="absolute inset-2.5 pointer-events-none rounded-xl border"
-                            style={{ borderColor: currentTheme.innerBorderColor }}
-                          />
-                          <div className="absolute top-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
-                          <div className="absolute top-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
-                          <div className="absolute bottom-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
-                          <div className="absolute bottom-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
+                          {editorCardBorderStyle !== 'no_border' && (
+                            <div
+                              className="absolute inset-2.5 pointer-events-none rounded-xl border"
+                              style={{ borderColor: currentTheme.innerBorderColor }}
+                            />
+                          )}
 
-                          <div className="space-y-1 z-10">
-                            <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: currentTheme.kickerColor }}>
-                              {editorCardKicker || 'HECHO ESPECIALMENTE PARA'}
-                            </span>
-                            <h4 className={`text-lg leading-tight truncate ${currentTheme.fontTitleClass}`} style={{ color: currentTheme.namesColor }}>
-                              {editorCardNames || `${project.sender_name || 'Remitente'} & ${project.recipient_name || 'Destinatario'}`}
-                            </h4>
+                          {editorCardBorderStyle !== 'no_border' && (
+                            <>
+                              <div className="absolute top-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
+                              <div className="absolute top-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
+                              <div className="absolute bottom-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
+                              <div className="absolute bottom-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
+                            </>
+                          )}
+
+                          {/* DYNAMIC POSITIONS IN EDITOR MOCKUP */}
+                          {editorCardQrPosition === 'center_large' ? (
+                            <div className="flex flex-col items-center justify-between h-full z-10 text-center">
+                              <div className="space-y-1">
+                                <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: currentTheme.kickerColor }}>
+                                  {editorCardKicker || 'HECHO ESPECIALMENTE PARA'}
+                                </span>
+                                <h4 className={`font-bold leading-tight ${nameSizeClass} ${currentFont.class}`} style={{ color: currentTheme.namesColor }}>
+                                  {namesText}
+                                </h4>
+                              </div>
+
+                              <div className={`${qrSizeClass} bg-white p-1 rounded-xl shadow-inner flex items-center justify-center my-2 border`} style={{ borderColor: currentTheme.borderColor }}>
+                                <img src={currentQrUrl} alt="Código QR Tarjeta" className="w-full h-full object-contain" />
+                              </div>
+
+                              <p className="text-[10px] leading-snug font-serif italic max-w-[90%]" style={{ color: currentTheme.messageColor }}>
+                                {editorCardMessage || 'Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.'}
+                              </p>
+                            </div>
+                          ) : editorCardQrPosition === 'bottom_center' ? (
+                            <div className="flex flex-col items-center justify-between h-full z-10 text-center">
+                              <div className="space-y-1">
+                                <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: currentTheme.kickerColor }}>
+                                  {editorCardKicker || 'HECHO ESPECIALMENTE PARA'}
+                                </span>
+                                <h4 className={`font-bold leading-tight ${nameSizeClass} ${currentFont.class}`} style={{ color: currentTheme.namesColor }}>
+                                  {namesText}
+                                </h4>
+                                <p className="text-[10px] leading-snug font-serif italic max-w-[90%] pt-1" style={{ color: currentTheme.messageColor }}>
+                                  {editorCardMessage || 'Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.'}
+                                </p>
+                              </div>
+
+                              <div className={`${qrSizeClass} bg-white p-1 rounded-xl shadow-inner flex items-center justify-center border`} style={{ borderColor: currentTheme.borderColor }}>
+                                <img src={currentQrUrl} alt="Código QR Tarjeta" className="w-full h-full object-contain" />
+                              </div>
+                            </div>
+                          ) : editorCardQrPosition === 'top_right' ? (
+                            <div className="flex flex-col justify-between h-full z-10">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="space-y-1 flex-1">
+                                  <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: currentTheme.kickerColor }}>
+                                    {editorCardKicker || 'HECHO ESPECIALMENTE PARA'}
+                                  </span>
+                                  <h4 className={`font-bold leading-tight ${nameSizeClass} ${currentFont.class}`} style={{ color: currentTheme.namesColor }}>
+                                    {namesText}
+                                  </h4>
+                                </div>
+                                <div className={`${qrSizeClass} bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border`} style={{ borderColor: currentTheme.borderColor }}>
+                                  <img src={currentQrUrl} alt="Código QR Tarjeta" className="w-full h-full object-contain" />
+                                </div>
+                              </div>
+
+                              <p className="text-[10px] leading-snug font-serif italic pt-2" style={{ color: currentTheme.messageColor }}>
+                                {editorCardMessage || 'Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.'}
+                              </p>
+                            </div>
+                          ) : editorCardQrPosition === 'left_split' ? (
+                            <div className="flex items-center gap-4 h-full z-10">
+                              <div className={`${qrSizeClass} bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border`} style={{ borderColor: currentTheme.borderColor }}>
+                                <img src={currentQrUrl} alt="Código QR Tarjeta" className="w-full h-full object-contain" />
+                              </div>
+                              <div className="space-y-2 flex-1">
+                                <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: currentTheme.kickerColor }}>
+                                  {editorCardKicker || 'HECHO ESPECIALMENTE PARA'}
+                                </span>
+                                <h4 className={`font-bold leading-tight ${nameSizeClass} ${currentFont.class}`} style={{ color: currentTheme.namesColor }}>
+                                  {namesText}
+                                </h4>
+                                <p className="text-[10px] leading-snug font-serif italic" style={{ color: currentTheme.messageColor }}>
+                                  {editorCardMessage || 'Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.'}
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            /* Standard bottom_right */
+                            <div className="flex flex-col justify-between h-full z-10">
+                              <div className="space-y-1">
+                                <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: currentTheme.kickerColor }}>
+                                  {editorCardKicker || 'HECHO ESPECIALMENTE PARA'}
+                                </span>
+                                <h4 className={`font-bold leading-tight ${nameSizeClass} ${currentFont.class}`} style={{ color: currentTheme.namesColor }}>
+                                  {namesText}
+                                </h4>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <p className="text-[10px] leading-snug font-serif italic flex-1" style={{ color: currentTheme.messageColor }}>
+                                  {editorCardMessage || 'Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.'}
+                                </p>
+                                <div className={`${qrSizeClass} bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border`} style={{ borderColor: currentTheme.borderColor }}>
+                                  <img src={currentQrUrl} alt="Código QR Tarjeta" className="w-full h-full object-contain" />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <span className="text-[11px] text-slate-500 font-mono">
+                          Escala física real: 9 x 9 cm (300 DPI Vectorial PDF)
+                        </span>
+                      </div>
+
+                      {/* Controls Column */}
+                      <div className="md:col-span-6 space-y-5">
+                        {/* 1. Position Selector */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <Layout className="w-4 h-4 text-pink-400" />
+                            Disposición &amp; Posición del QR
+                          </label>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {QR_POSITIONS.map((pos) => (
+                              <button
+                                key={pos.id}
+                                onClick={() => setEditorCardQrPosition(pos.id)}
+                                className={`p-2 rounded-xl border text-left transition cursor-pointer ${
+                                  editorCardQrPosition === pos.id
+                                    ? 'border-pink-500 bg-pink-500/10 text-white font-bold'
+                                    : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                                }`}
+                              >
+                                <span className="block text-xs">{pos.name}</span>
+                                <span className="block text-[9px] text-slate-500 font-normal">{pos.desc}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 2. Typography Selector */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <Type className="w-4 h-4 text-pink-400" />
+                            Fuente Tipográfica
+                          </label>
+                          <select
+                            value={editorCardFontFamily}
+                            onChange={(e) => setEditorCardFontFamily(e.target.value)}
+                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
+                          >
+                            {FONT_OPTIONS.map((f) => (
+                              <option key={f.id} value={f.id}>
+                                {f.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* 3. Sizes */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center gap-1">
+                              <Maximize2 className="w-3.5 h-3.5" /> Tamaño del Título
+                            </label>
+                            <div className="flex rounded-xl bg-slate-900 border border-slate-700 p-1 gap-1">
+                              {['small', 'medium', 'large'].map((s) => (
+                                <button
+                                  key={s}
+                                  onClick={() => setEditorCardTitleSize(s)}
+                                  className={`flex-1 py-1 text-[10px] font-bold uppercase rounded-lg transition cursor-pointer ${
+                                    editorCardTitleSize === s ? 'bg-pink-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                                  }`}
+                                >
+                                  {s === 'small' ? 'Pequ' : s === 'medium' ? 'Med' : 'Gran'}
+                                </button>
+                              ))}
+                            </div>
                           </div>
 
-                          <div className="flex items-center gap-3 z-10">
-                            <p className="text-[10px] leading-snug font-serif italic flex-1" style={{ color: currentTheme.messageColor }}>
-                              {editorCardMessage || 'Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.'}
-                            </p>
-                            <div className="w-20 h-20 bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border" style={{ borderColor: currentTheme.borderColor }}>
-                              <img src={currentQrUrl} alt="Código QR Tarjeta" className="w-full h-full object-contain" />
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center gap-1">
+                              <QrCode className="w-3.5 h-3.5" /> Tamaño del QR
+                            </label>
+                            <div className="flex rounded-xl bg-slate-900 border border-slate-700 p-1 gap-1">
+                              {['small', 'medium', 'large'].map((s) => (
+                                <button
+                                  key={s}
+                                  onClick={() => setEditorCardQrSize(s)}
+                                  className={`flex-1 py-1 text-[10px] font-bold uppercase rounded-lg transition cursor-pointer ${
+                                    editorCardQrSize === s ? 'bg-pink-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                                  }`}
+                                >
+                                  {s === 'small' ? '2.5cm' : s === 'medium' ? '3.2cm' : '4.0cm'}
+                                </button>
+                              ))}
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Inputs & Actions */}
-                      <div className="md:col-span-6 space-y-4">
-                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                          <Edit3 className="w-4 h-4 text-pink-400" />
-                          Contenidos Editables de la Tarjeta
-                        </h4>
+                        {/* 4. Text Form */}
+                        <div className="space-y-3 pt-1">
+                          <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <Edit3 className="w-4 h-4 text-pink-400" />
+                            Contenidos Editables
+                          </label>
 
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-400 mb-1">Encabezado Superior</label>
-                          <input
-                            type="text"
-                            value={editorCardKicker}
-                            onChange={(e) => setEditorCardKicker(e.target.value)}
-                            placeholder="Ej: HECHO ESPECIALMENTE PARA"
-                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
-                          />
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[11px] text-slate-400 mb-1">Encabezado</label>
+                              <input
+                                type="text"
+                                value={editorCardKicker}
+                                onChange={(e) => setEditorCardKicker(e.target.value)}
+                                className="w-full p-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] text-slate-400 mb-1">Nombres</label>
+                              <input
+                                type="text"
+                                value={editorCardNames}
+                                onChange={(e) => setEditorCardNames(e.target.value)}
+                                className="w-full p-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] text-slate-400 mb-1">Mensaje Escáner</label>
+                            <textarea
+                              value={editorCardMessage}
+                              onChange={(e) => setEditorCardMessage(e.target.value)}
+                              rows={2}
+                              className="w-full p-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-serif italic"
+                            />
+                          </div>
                         </div>
 
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-400 mb-1">Nombres Principales</label>
-                          <input
-                            type="text"
-                            value={editorCardNames}
-                            onChange={(e) => setEditorCardNames(e.target.value)}
-                            placeholder="Ej: Hans & Tamara"
-                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-400 mb-1">Mensaje Dedicatorio</label>
-                          <textarea
-                            value={editorCardMessage}
-                            onChange={(e) => setEditorCardMessage(e.target.value)}
-                            rows={3}
-                            placeholder="Ej: Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor."
-                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-serif italic"
-                          />
-                        </div>
-
+                        {/* Download Actions */}
                         <div className="flex flex-wrap gap-3 pt-2">
                           <a
                             href={currentPdfUrl}

@@ -8,7 +8,17 @@ export const API_BASE =
 export function getPrintableCardUrl(
   projectId: string,
   slug?: string,
-  options?: { styleId?: string; kicker?: string; message?: string; names?: string }
+  options?: {
+    styleId?: string;
+    kicker?: string;
+    message?: string;
+    names?: string;
+    qrPosition?: string;
+    fontFamily?: string;
+    titleSize?: string;
+    qrSize?: string;
+    borderStyle?: string;
+  }
 ): string {
   const params = new URLSearchParams();
   if (slug) {
@@ -18,6 +28,11 @@ export function getPrintableCardUrl(
   if (options?.kicker) params.append('kicker', options.kicker);
   if (options?.message) params.append('message', options.message);
   if (options?.names) params.append('names', options.names);
+  if (options?.qrPosition) params.append('qrPosition', options.qrPosition);
+  if (options?.fontFamily) params.append('fontFamily', options.fontFamily);
+  if (options?.titleSize) params.append('titleSize', options.titleSize);
+  if (options?.qrSize) params.append('qrSize', options.qrSize);
+  if (options?.borderStyle) params.append('borderStyle', options.borderStyle);
 
   const queryStr = params.toString();
   return `${API_BASE}/projects/${projectId}/card${queryStr ? '?' + queryStr : ''}`;
