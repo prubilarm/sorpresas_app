@@ -1066,6 +1066,7 @@ export const ProjectEditor: React.FC = () => {
                 />
               </div>
 
+              {/* ── Portada photo ── */}
               <div className="space-y-3">
                 <label className="block text-xs font-bold text-slate-400">Fotografía Principal de Portada</label>
                 {heroSec.settings_json?.cover && (
@@ -1073,14 +1074,123 @@ export const ProjectEditor: React.FC = () => {
                     <img src={heroSec.settings_json.cover} alt="Portada" className="w-full h-full object-cover" />
                   </div>
                 )}
-                <label className="cursor-pointer inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-lg">
+                <label className="cursor-pointer inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-lg hover:brightness-110 transition">
                   <Upload className="w-4 h-4" />
                   {uploading ? 'Subiendo imagen…' : 'Cambiar Imagen de Portada'}
                   <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'hero')} className="hidden" />
                 </label>
               </div>
+
+              <div className="mt-6 pt-6 border-t border-slate-800 space-y-4">
+                <h3 className="text-base font-bold text-pink-400 flex items-center gap-2">
+                  🎵 Foto para "La canción que empezó todo"
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Esta foto aparece como polaroid debajo del reproductor al inicio de la experiencia. Si no subes ninguna, se usa la foto de portada.
+                </p>
+
+                {/* Preview */}
+                {project.settings_json?.song_photo_url && (
+                  <div className="relative w-full max-w-xs h-44 rounded-2xl overflow-hidden border border-slate-700 bg-slate-800">
+                    <img
+                      src={project.settings_json.song_photo_url}
+                      alt="Foto de la canción"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setProject((p: any) => ({
+                          ...p,
+                          settings_json: { ...p.settings_json, song_photo_url: '' },
+                        }))
+                      }
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-red-600 transition"
+                      title="Quitar foto"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                <label className="cursor-pointer inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-lg hover:brightness-110 transition">
+                  <Upload className="w-4 h-4" />
+                  {uploading ? 'Subiendo…' : 'Subir foto de la canción (polaroid)'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploading(true);
+                      try {
+                        const dataUrl = await compressImageFile(file);
+                        // Convert dataUrl to Blob for FormData
+                        const res = await fetch(dataUrl);
+                        const blob = await res.blob();
+                        const compressed = new File([blob], file.name, { type: blob.type });
+                        const fd = new FormData();
+                        fd.append('file', compressed);
+                        fd.append('projectId', project.id);
+                        const apiBase = (window as any).__VITE_API_URL__ || 'https://sorpresas-app-backend-production.up.railway.app';
+                        const resp = await fetch(`${apiBase}/api/media/upload`, {
+                          method: 'POST',
+                          headers: { Authorization: `Bearer ${localStorage.getItem('auth_token')}` },
+                          body: fd,
+                        });
+                        if (resp.ok) {
+                          const data = await resp.json();
+                          const url = data.media?.url || data.url || data.media?.public_url || '';
+                          setProject((p: any) => ({
+                            ...p,
+                            settings_json: { ...p.settings_json, song_photo_url: url },
+                          }));
+                        }
+                      } catch (err) {
+                        console.error('Error uploading song photo', err);
+                      } finally {
+                        setUploading(false);
+                      }
+                    }}
+                  />
+                </label>
+
+                {/* Song name & artist editable */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Nombre de la canción</label>
+                    <input
+                      type="text"
+                      value={project.settings_json?.song_name || 'Until Found'}
+                      onChange={(e) =>
+                        setProject((p: any) => ({
+                          ...p,
+                          settings_json: { ...p.settings_json, song_name: e.target.value },
+                        }))
+                      }
+                      className="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Artista</label>
+                    <input
+                      type="text"
+                      value={project.settings_json?.song_artist || 'Sam Smith'}
+                      onChange={(e) =>
+                        setProject((p: any) => ({
+                          ...p,
+                          settings_json: { ...p.settings_json, song_artist: e.target.value },
+                        }))
+                      }
+                      className="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
+
 
           {/* Tab 4: Letter */}
           {activeTab === 'letter' && letterSec && (
