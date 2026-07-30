@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, QrCode, FileText, Copy, Check, Download, ExternalLink, Sparkles, Printer, Share2, Palette, Edit3, Layout, Type, Maximize2, Shield, Move } from 'lucide-react';
-import { getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl } from '../../services/api';
+import { X, QrCode, FileText, Copy, Check, Download, ExternalLink, Sparkles, Printer, Share2, Palette, Edit3, Layout, Type, Maximize2, Shield, Move, Save, Loader2 } from 'lucide-react';
+import { getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl, updateProject } from '../../services/api';
 import { CardCanvasEditor, CustomCanvasConfig, DEFAULT_CANVAS_CONFIG } from './CardCanvasEditor';
 
 interface QrAndCardModalProps {
@@ -156,6 +156,46 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
   const [cardQrSize, setCardQrSize] = useState<string>(savedCardSettings.qrSize || 'medium');
   const [cardBorderStyle, setCardBorderStyle] = useState<string>(savedCardSettings.borderStyle || 'double_gold');
 
+  const [isSavingCard, setIsSavingCard] = useState(false);
+  const [saveCardStatus, setSaveCardStatus] = useState<string | null>(null);
+
+  const handleSaveCardSettings = async () => {
+    setIsSavingCard(true);
+    setSaveCardStatus('Guardando...');
+    try {
+      const newCardSettings = {
+        styleId: cardStyleId,
+        kicker: cardKicker,
+        message: cardMessage,
+        names: cardNames,
+        qrPosition: cardQrPosition,
+        fontFamily: cardFontFamily,
+        titleSize: cardTitleSize,
+        qrSize: cardQrSize,
+        borderStyle: cardBorderStyle,
+        custom_canvas: canvasConfig,
+      };
+
+      const updatedSettings = {
+        ...(project.settings_json || {}),
+        card_settings: newCardSettings,
+      };
+
+      await updateProject(project.id, {
+        ...project,
+        settings_json: updatedSettings,
+      });
+
+      setSaveCardStatus('¡Guardado con éxito! ✓');
+      setTimeout(() => setSaveCardStatus(null), 3000);
+    } catch (err: any) {
+      alert('Error al guardar configuración de tarjeta: ' + err.message);
+      setSaveCardStatus('Error al guardar ✖');
+    } finally {
+      setIsSavingCard(false);
+    }
+  };
+
   const selectedTheme = CARD_STYLES.find((s) => s.id === cardStyleId) || CARD_STYLES[0];
   const selectedFont = FONT_OPTIONS.find((f) => f.id === cardFontFamily) || FONT_OPTIONS[0];
 
@@ -237,12 +277,27 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-3">
+            {saveCardStatus && (
+              <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/30">
+                {saveCardStatus}
+              </span>
+            )}
+            <button
+              onClick={handleSaveCardSettings}
+              disabled={isSavingCard}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs shadow-lg transition cursor-pointer disabled:opacity-50"
+            >
+              {isSavingCard ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              Guardar Tarjeta
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation Controls */}
@@ -813,12 +868,22 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
             </a>
           </div>
 
-          <button
-            onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 font-semibold text-xs transition cursor-pointer"
-          >
-            Cerrar
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSaveCardSettings}
+              disabled={isSavingCard}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs shadow-lg transition cursor-pointer disabled:opacity-50"
+            >
+              {isSavingCard ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {saveCardStatus || 'Guardar Configuración'}
+            </button>
+            <button
+              onClick={onClose}
+              className="px-5 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 font-semibold text-xs transition cursor-pointer"
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
       </div>
     </div>
