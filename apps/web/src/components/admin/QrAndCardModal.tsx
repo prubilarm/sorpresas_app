@@ -20,6 +20,7 @@ export interface CardStylePreset {
   qrDark: string;
   qrLight: string;
   badgeBg: string;
+  fontTitle?: string;
 }
 
 export const CARD_STYLES: CardStylePreset[] = [

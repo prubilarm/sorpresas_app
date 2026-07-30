@@ -73,6 +73,13 @@ export const ProjectEditor: React.FC = () => {
   const [editorQrCopied, setEditorQrCopied] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
 
+  const [editorCardStyleId, setEditorCardStyleId] = useState<string>('midnight_velvet');
+  const [editorCardKicker, setEditorCardKicker] = useState<string>('HECHO ESPECIALMENTE PARA');
+  const [editorCardMessage, setEditorCardMessage] = useState<string>(
+    'Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.'
+  );
+  const [editorCardNames, setEditorCardNames] = useState<string>('');
+
   const [exportsList, setExportsList] = useState<any[]>([]);
   const [exportFormat, setExportFormat] = useState<'9:16' | '4:5' | '1:1' | '16:9'>('9:16');
   const [exportProfile, setExportProfile] = useState<'reel_short' | 'reel_social' | 'full_experience'>('full_experience');
@@ -97,6 +104,18 @@ export const ProjectEditor: React.FC = () => {
         setProject(res.project);
         setSections(res.sections || []);
         setMedia(res.media || []);
+
+        const cardSettings = res.project.settings_json?.card_settings || {};
+        if (cardSettings.styleId) setEditorCardStyleId(cardSettings.styleId);
+        if (cardSettings.kicker) setEditorCardKicker(cardSettings.kicker);
+        if (cardSettings.message) setEditorCardMessage(cardSettings.message);
+        if (cardSettings.names) {
+          setEditorCardNames(cardSettings.names);
+        } else {
+          const sender = res.project.sender_name || res.project.person_one_name || 'Remitente';
+          const recipient = res.project.recipient_name || res.project.person_two_name || 'Destinatario';
+          setEditorCardNames(`${sender} & ${recipient}`);
+        }
       })
       .catch((err) => alert('Error al cargar proyecto: ' + err.message));
 
@@ -144,8 +163,19 @@ export const ProjectEditor: React.FC = () => {
     setSaving(true);
     setSaveStatus('Guardando…');
     try {
+      const updatedSettings = {
+        ...(project.settings_json || {}),
+        card_settings: {
+          styleId: editorCardStyleId,
+          kicker: editorCardKicker,
+          message: editorCardMessage,
+          names: editorCardNames,
+        },
+      };
+
       await updateProject(project.id, {
         ...project,
+        settings_json: updatedSettings,
         sections,
       });
       setSaveStatus('Cambios guardados ✓');
