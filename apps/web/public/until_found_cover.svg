@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <radialGradient id="bg" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#7c0a2a"/>
+      <stop offset="45%" stop-color="#3d0515"/>
+      <stop offset="100%" stop-color="#0d0008"/>
+    </radialGradient>
+    <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff4f9a" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+    <filter id="blur1">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <filter id="blur2">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="500" height="500" fill="url(#bg)"/>
+  <rect width="500" height="500" fill="url(#glow1)"/>
+
+  <!-- Ambient light streaks -->
+  <ellipse cx="160" cy="180" rx="120" ry="80" fill="#ff4f9a" opacity="0.08" filter="url(#blur2)"/>
+  <ellipse cx="350" cy="300" rx="80" ry="60" fill="#8b1a4a" opacity="0.12" filter="url(#blur2)"/>
+
+  <!-- Silhouette / abstract figure suggestion -->
+  <ellipse cx="250" cy="155" rx="65" ry="75" fill="#1a0008" opacity="0.7"/>
+  <ellipse cx="250" cy="155" rx="62" ry="72" fill="#2d0010" opacity="0.5"/>
+
+  <!-- Face glow outline -->
+  <ellipse cx="250" cy="150" rx="58" ry="68" fill="none" stroke="#ff4f9a" stroke-width="1" opacity="0.25"/>
+
+  <!-- Body/shoulders suggestion -->
+  <path d="M 155 280 Q 200 240 250 235 Q 300 240 345 280 L 370 400 L 130 400 Z" fill="#110007" opacity="0.8"/>
+  <path d="M 165 280 Q 207 248 250 243 Q 293 248 335 280 L 358 380 L 142 380 Z" fill="#1e000c" opacity="0.6"/>
+
+  <!-- Dramatic light on face -->
+  <ellipse cx="220" cy="140" rx="35" ry="42" fill="#5c1025" opacity="0.5"/>
+  <ellipse cx="215" cy="135" rx="20" ry="28" fill="#8a1535" opacity="0.4" filter="url(#blur1)"/>
+
+  <!-- Shadow side of face -->
+  <path d="M 250 85 Q 310 90 315 200 L 250 210 Z" fill="#050003" opacity="0.55"/>
+
+  <!-- Hair -->
+  <ellipse cx="250" cy="108" rx="65" ry="35" fill="#0a0004"/>
+  <path d="M 185 120 Q 175 90 185 75 Q 220 55 250 60 Q 280 55 315 75 Q 325 90 315 120" fill="#0a0004"/>
+
+  <!-- Subtle eye glints -->
+  <ellipse cx="230" cy="155" rx="7" ry="4" fill="#cc2255" opacity="0.5" filter="url(#blur1)"/>
+  <ellipse cx="270" cy="155" rx="7" ry="4" fill="#cc2255" opacity="0.5" filter="url(#blur1)"/>
+
+  <!-- Bottom gradient overlay -->
+  <rect x="0" y="300" width="500" height="200" fill="url(#bottomFade)"/>
+  <defs>
+    <linearGradient id="bottomFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d0008" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0d0008" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Pink horizontal line accent -->
+  <rect x="80" y="390" width="340" height="1.5" fill="#ff4f9a" opacity="0.35"/>
+
+  <!-- Text: GLORIA -->
+  <text x="250" y="440" font-family="Georgia, serif" font-size="42" font-weight="bold" letter-spacing="14" fill="#ffffff" text-anchor="middle" opacity="0.92">GLORIA</text>
+
+  <!-- Text: SAM SMITH -->
+  <text x="250" y="472" font-family="Georgia, serif" font-size="14" letter-spacing="6" fill="#ff83b6" text-anchor="middle" opacity="0.75">SAM SMITH</text>
+
+  <!-- Corner glow dots -->
+  <circle cx="35" cy="35" r="3" fill="#ff4f9a" opacity="0.4"/>
+  <circle cx="465" cy="465" r="3" fill="#ff4f9a" opacity="0.4"/>
+  <circle cx="465" cy="35" r="2" fill="#cc2255" opacity="0.3"/>
+  <circle cx="35" cy="465" r="2" fill="#cc2255" opacity="0.3"/>
+</svg>
