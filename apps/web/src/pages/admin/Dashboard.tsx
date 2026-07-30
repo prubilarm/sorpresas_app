@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchProjects, publishProject, unpublishProject, duplicateProject, deleteProject } from '../../services/api';
 import { NewProjectWizard } from '../../components/admin/NewProjectWizard';
+import { QrAndCardModal } from '../../components/admin/QrAndCardModal';
 import { Plus, Search, Eye, Edit, Copy, QrCode, FileText, Trash2, Heart, Share2, LogOut, CheckCircle2, Clock, Sparkles, User, Users } from 'lucide-react';
 import { RELATIONSHIP_OPTIONS, OCCASION_OPTIONS } from '@recuerdos-qr/shared';
 
@@ -11,6 +12,7 @@ export const Dashboard: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showCreateWizard, setShowCreateWizard] = useState(false);
+  const [selectedProjectForQr, setSelectedProjectForQr] = useState<any | null>(null);
 
   const navigate = useNavigate();
 
@@ -203,7 +205,7 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="pt-4 border-t border-slate-800 grid grid-cols-4 gap-2 text-center text-xs font-semibold">
+                  <div className="pt-4 border-t border-slate-800 grid grid-cols-5 gap-1.5 text-center text-[11px] font-semibold">
                     <button
                       onClick={() => navigate(`/admin/editor/${p.id}`)}
                       className="p-2 rounded-lg bg-slate-800 text-slate-200 hover:bg-pink-600 hover:text-white transition flex flex-col items-center gap-1"
@@ -223,6 +225,15 @@ export const Dashboard: React.FC = () => {
                       <Eye className="w-4 h-4" />
                       Ver
                     </a>
+
+                    <button
+                      onClick={() => setSelectedProjectForQr(p)}
+                      className="p-2 rounded-lg bg-pink-950/60 text-pink-300 hover:bg-pink-600 hover:text-white border border-pink-500/20 transition flex flex-col items-center gap-1"
+                      title="Código QR y Tarjeta Imprimible"
+                    >
+                      <QrCode className="w-4 h-4" />
+                      QR/Tarjeta
+                    </button>
 
                     <button
                       onClick={() => handleTogglePublish(p)}
@@ -259,6 +270,14 @@ export const Dashboard: React.FC = () => {
             setShowCreateWizard(false);
             navigate(`/admin/editor/${createdProj.id}`);
           }}
+        />
+      )}
+
+      {/* QR & Tarjeta Modal */}
+      {selectedProjectForQr && (
+        <QrAndCardModal
+          project={selectedProjectForQr}
+          onClose={() => setSelectedProjectForQr(null)}
         />
       )}
     </div>

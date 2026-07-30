@@ -1,9 +1,32 @@
 // In production: connects to live Railway backend API
 // In development: connects to local Express backend on http://localhost:4000/api
-const API_BASE =
+export const API_BASE =
   typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:4000/api'
     : 'https://recuerdos-qrweb-production.up.railway.app/api';
+
+export function getPrintableCardUrl(projectId: string): string {
+  return `${API_BASE}/projects/${projectId}/card`;
+}
+
+export function getQrCodeUrl(
+  projectId: string,
+  format: 'png' | 'svg' = 'png',
+  color: string = '#e83482',
+  bgColor: string = '#ffffff'
+): string {
+  const params = new URLSearchParams({
+    format,
+    color,
+    bgColor,
+  });
+  return `${API_BASE}/projects/${projectId}/qr?${params.toString()}`;
+}
+
+export function getPublicGiftUrl(slug: string): string {
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+  return `${origin}/r/${slug}`;
+}
 
 export function resolveMediaUrl(url?: string): string {
   if (!url) return '';

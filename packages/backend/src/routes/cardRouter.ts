@@ -25,8 +25,13 @@ cardRouter.get('/:id/card', async (req, res) => {
   const project = db.getState.projects.find((p) => p.id === req.params.id);
   if (!project) return res.status(404).json({ error: 'Proyecto no encontrado' });
 
-  const host = req.get('host') || 'localhost:3000';
-  const publicUrl = `http://${host}/r/${project.slug}`;
+  const frontendBase =
+    process.env.FRONTEND_URL ||
+    req.headers.origin ||
+    (req.headers.referer ? new URL(req.headers.referer).origin : null) ||
+    `http://${(req.get('host') || 'localhost:3000').replace(':4000', ':3000')}`;
+
+  const publicUrl = `${frontendBase.replace(/\/$/, '')}/r/${project.slug}`;
 
   try {
     // 9cm in points = (9 / 2.54) * 72 = 255.118 pt

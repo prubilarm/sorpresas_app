@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import dotenv from 'dotenv';
+import fs from 'fs';
 import { setupSwagger } from './swagger';
 import { authRouter } from './routes/authRouter';
 import { projectsRouter } from './routes/projectsRouter';
@@ -31,11 +32,6 @@ const assetsPath = path.join(__dirname, '../../../regalo_qr_producto_v2/assets')
 app.use('/uploads', express.static(uploadsPath));
 app.use('/assets', express.static(assetsPath));
 
-// Root welcome page / Swagger redirect
-app.get('/', (req, res) => {
-  res.redirect('/api-docs');
-});
-
 // Setup Swagger UI Documentation
 setupSwagger(app);
 
@@ -47,6 +43,32 @@ app.use('/api/projects', qrRouter);
 app.use('/api/projects', cardRouter);
 app.use('/api/public', publicRouter);
 app.use('/api/analytics', analyticsRouter);
+
+// Serve Web Frontend Production Build (apps/web/dist) if built
+const webDistPath = path.join(__dirname, '../../../apps/web/dist');
+if (fs.existsSync(webDistPath)) {
+  app.use(express.static(webDistPath));
+  app.get('*', (req, res, next) => {
+    if (
+      req.path.startsWith('/api') ||
+      req.path.startsWith('/uploads') ||
+      req.path.startsWith('/assets') ||
+      req.path.startsWith('/api-docs')
+    ) {
+      return next();
+    }
+    const indexPath = path.join(webDistPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+    next();
+  });
+} else {
+  // Fallback root redirect to Swagger docs if web dist is not built yet
+  app.get('/', (req, res) => {
+    res.redirect('/api-docs');
+  });
+}
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

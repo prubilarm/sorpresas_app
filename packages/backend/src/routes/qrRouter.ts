@@ -41,8 +41,13 @@ qrRouter.get('/:id/qr', async (req, res) => {
   const color = (req.query.color as string) || '#e83482';
   const bgColor = (req.query.bgColor as string) || '#ffffff';
 
-  const host = req.get('host') || 'localhost:3000';
-  const destinationUrl = `http://${host}/r/${project.slug}`;
+  const frontendBase =
+    process.env.FRONTEND_URL ||
+    req.headers.origin ||
+    (req.headers.referer ? new URL(req.headers.referer).origin : null) ||
+    `http://${(req.get('host') || 'localhost:3000').replace(':4000', ':3000')}`;
+
+  const destinationUrl = `${frontendBase.replace(/\/$/, '')}/r/${project.slug}`;
 
   try {
     if (format === 'svg') {

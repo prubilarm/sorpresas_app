@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchProjectById, updateProject, uploadMediaFile, deleteMediaFile, createProjectExport, fetchProjectExports, deleteProjectExport, resolveMediaUrl } from '../../services/api';
-import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2 } from 'lucide-react';
+import { fetchProjectById, updateProject, uploadMediaFile, deleteMediaFile, createProjectExport, fetchProjectExports, deleteProjectExport, resolveMediaUrl, getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl } from '../../services/api';
+import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2, Copy, ExternalLink, Printer, Share2 } from 'lucide-react';
 import { THEMES, ThemeId, generateDefaultGiftPreset } from '@recuerdos-qr/shared';
 import { NumberPicker } from '../../components/admin/NumberPicker';
 import { MemoryStoryGallery } from '../../components/public/gallery/MemoryStoryGallery';
 import { CinematicMemoryGallery } from '../../components/public/gallery/CinematicMemoryGallery';
 import { GiftExperience } from '../../components/public/GiftExperience';
+import { QrAndCardModal } from '../../components/admin/QrAndCardModal';
 
 const compressImageFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -66,6 +67,11 @@ export const ProjectEditor: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string>('Cambios guardados');
   const [uploading, setUploading] = useState(false);
+
+  const [editorQrColor, setEditorQrColor] = useState('#e83482');
+  const [editorQrBgColor, setEditorQrBgColor] = useState('#ffffff');
+  const [editorQrCopied, setEditorQrCopied] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   const [exportsList, setExportsList] = useState<any[]>([]);
   const [exportFormat, setExportFormat] = useState<'9:16' | '4:5' | '1:1' | '16:9'>('9:16');
@@ -403,6 +409,15 @@ export const ProjectEditor: React.FC = () => {
 
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <span className="hidden sm:block text-xs font-semibold text-slate-400">{saveStatus}</span>
+
+          <button
+            onClick={() => setShowQrModal(true)}
+            className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-300 font-bold text-xs sm:text-sm hover:bg-pink-500 hover:text-white transition shadow-sm"
+            title="Código QR y Tarjeta de Presentación"
+          >
+            <QrCode className="w-4 h-4" />
+            <span className="hidden sm:inline">QR / Tarjeta</span>
+          </button>
 
           <a
             href={`/r/${project.slug}`}
@@ -803,6 +818,76 @@ export const ProjectEditor: React.FC = () => {
                     </div>
                   </>
                 )}
+              </div>
+
+              {/* Acceso Rápido a Código QR & Tarjeta de Presentación */}
+              <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <QrCode className="w-5 h-5 text-pink-500" />
+                    <div>
+                      <h3 className="text-base font-bold text-white leading-tight">Código QR &amp; Tarjeta de Presentación</h3>
+                      <p className="text-xs text-slate-400">Entrega rápida para tu cliente</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowQrModal(true)}
+                    className="px-3.5 py-1.5 rounded-xl bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white border border-pink-500/30 text-xs font-bold transition flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Abrir Personalizador QR
+                  </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-5 bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+                  <div className="p-3 bg-white rounded-xl shadow-lg flex-shrink-0">
+                    <img
+                      src={getQrCodeUrl(project.id, 'png', '#e83482', '#ffffff')}
+                      alt="Código QR del regalo"
+                      className="w-24 h-24 object-contain"
+                    />
+                  </div>
+
+                  <div className="space-y-3 flex-1 text-xs">
+                    <div>
+                      <span className="text-[10px] font-bold text-pink-400 uppercase tracking-wider block">Enlace público asignado</span>
+                      <p className="font-mono text-slate-200 text-xs truncate max-w-md">{getPublicGiftUrl(project.slug)}</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <a
+                        href={getQrCodeUrl(project.id, 'png', '#e83482', '#ffffff')}
+                        download={`qr_${project.slug}.png`}
+                        className="inline-flex items-center gap-1.5 py-2 px-3 rounded-lg bg-pink-600 text-white font-bold hover:bg-pink-500 transition"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Descargar QR (PNG)
+                      </a>
+                      <a
+                        href={getPrintableCardUrl(project.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 py-2 px-3 rounded-lg bg-slate-800 text-slate-200 font-bold hover:bg-slate-700 transition"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        Descargar Tarjeta PDF (9x9 cm)
+                      </a>
+                      <a
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                          `¡Hola! Tu regalo personalizado ya está listo. Puedes ver la experiencia aquí: ${getPublicGiftUrl(project.slug)}`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 py-2 px-3 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                        Enviar por WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1820,25 +1905,230 @@ export const ProjectEditor: React.FC = () => {
             </div>
           )}
 
-          {/* Tab 8: QR & PDF */}
+          {/* Tab 10: QR & PDF Imprimible */}
           {activeTab === 'qr' && (
-            <div className="space-y-6 bg-slate-900 p-6 rounded-3xl border border-slate-800">
-              <h2 className="text-xl font-bold text-white">Código QR y Tarjeta PDF Imprimible</h2>
-              <div className="flex items-center gap-4">
-                <a
-                  href={`/api/projects/${project.id}/card`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-pink-600 text-white text-sm font-bold shadow-lg"
-                >
-                  <FileText className="w-4 h-4" />
-                  Descargar Tarjeta PDF (9x9 cm)
-                </a>
+            <div className="space-y-8 bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-800">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <QrCode className="w-5 h-5 text-pink-500" />
+                  Código QR &amp; Tarjeta de Presentación Imprimible
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Genera la tarjeta física de 9x9 cm para impresión de alta calidad o descarga el código QR digital personalizado.
+                </p>
+              </div>
+
+              {/* 1. Tarjeta de Presentación Imprimible (9x9 cm) */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-pink-400" />
+                  1. Tarjeta de Presentación Física (9 x 9 cm)
+                </h3>
+
+                <div className="flex flex-col lg:flex-row items-center gap-8 bg-slate-950/60 p-6 rounded-2xl border border-slate-800">
+                  {/* Physical 9x9 cm Card Interactive Mockup */}
+                  <div
+                    className="relative w-72 h-72 rounded-2xl p-6 shadow-2xl flex flex-col justify-between overflow-hidden border border-white/10 select-none flex-shrink-0"
+                    style={{ background: 'radial-gradient(circle at top, #67143a, #27000f 65%)' }}
+                  >
+                    <div className="space-y-1.5">
+                      <span className="block uppercase text-[9px] tracking-widest text-pink-300 font-bold">
+                        Hecho especialmente para
+                      </span>
+                      <h4 className="text-xl font-serif font-bold text-white leading-tight">
+                        {project.person_one_name || project.sender_name || 'Remitente'} &amp;{' '}
+                        {project.person_two_name || project.recipient_name || 'Destinatario'}
+                      </h4>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <p className="text-[10px] leading-relaxed text-pink-100/90 flex-1">
+                        Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.
+                      </p>
+                      <div className="w-20 h-20 bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0">
+                        <img
+                          src={getQrCodeUrl(project.id, 'png', '#27000f', '#ffffff')}
+                          alt="Código QR Tarjeta"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions & Instructions */}
+                  <div className="space-y-4 flex-1 text-slate-300 text-sm">
+                    <div className="space-y-1.5">
+                      <h4 className="text-base font-bold text-white">Documento PDF Vectorial de Alta Resolución</h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        Formato estándar de imprenta de <strong>9 cm x 9 cm</strong> listo para imprimir en cartulina mate o papel fotográfico brillante.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3 pt-2">
+                      <a
+                        href={getPrintableCardUrl(project.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 py-3 px-6 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-bold text-white text-sm shadow-lg hover:brightness-110 active:scale-95 transition"
+                      >
+                        <Download className="w-4 h-4" />
+                        Descargar Tarjeta PDF (9x9 cm)
+                      </a>
+                      <a
+                        href={getPrintableCardUrl(project.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition"
+                      >
+                        <Printer className="w-4 h-4" />
+                        Abrir / Imprimir
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Personalizador & Descargas de Código QR */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <QrCode className="w-4 h-4 text-pink-400" />
+                  2. Código QR Digital Personalizado
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-950/60 p-6 rounded-2xl border border-slate-800">
+                  {/* Live QR Image Box */}
+                  <div className="flex flex-col items-center justify-center p-6 bg-slate-900 rounded-2xl border border-slate-800 space-y-4">
+                    <div className="p-4 rounded-2xl shadow-xl transition-all" style={{ backgroundColor: editorQrBgColor }}>
+                      <img
+                        src={getQrCodeUrl(project.id, 'png', editorQrColor, editorQrBgColor)}
+                        alt="Vista previa QR"
+                        className="w-48 h-48 object-contain"
+                      />
+                    </div>
+                    <div className="text-center space-y-1 max-w-full">
+                      <span className="text-xs text-slate-400 font-mono block truncate px-2">
+                        {getPublicGiftUrl(project.slug)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Customizer Controls */}
+                  <div className="space-y-5 flex flex-col justify-between">
+                    <div className="space-y-4">
+                      {/* Dark Color Picker */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+                          Color del Código
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            value={editorQrColor}
+                            onChange={(e) => setEditorQrColor(e.target.value)}
+                            className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 cursor-pointer p-1"
+                          />
+                          <div className="flex gap-1.5 flex-wrap">
+                            {['#e83482', '#27000f', '#000000', '#6366f1', '#10b981', '#f59e0b'].map((c) => (
+                              <button
+                                key={c}
+                                onClick={() => setEditorQrColor(c)}
+                                className={`w-6 h-6 rounded-full border-2 transition ${
+                                  editorQrColor === c ? 'border-pink-500 scale-110' : 'border-transparent opacity-80 hover:opacity-100'
+                                }`}
+                                style={{ backgroundColor: c }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Background Color Picker */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+                          Color de Fondo
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            value={editorQrBgColor}
+                            onChange={(e) => setEditorQrBgColor(e.target.value)}
+                            className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 cursor-pointer p-1"
+                          />
+                          <div className="flex gap-1.5 flex-wrap">
+                            {['#ffffff', '#fbcfe8', '#27000f', '#0f172a', '#18181b'].map((c) => (
+                              <button
+                                key={c}
+                                onClick={() => setEditorQrBgColor(c)}
+                                className={`w-6 h-6 rounded-full border-2 transition ${
+                                  editorQrBgColor === c ? 'border-pink-500 scale-110' : 'border-transparent opacity-80 hover:opacity-100'
+                                }`}
+                                style={{ backgroundColor: c }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Copy Link Box */}
+                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                      <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                        Enlace Público Directo
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={getPublicGiftUrl(project.slug)}
+                          className="flex-1 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-mono text-pink-300 focus:outline-none"
+                        />
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(getPublicGiftUrl(project.slug));
+                            setEditorQrCopied(true);
+                            setTimeout(() => setEditorQrCopied(false), 2000);
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white border border-pink-500/30 text-xs font-bold transition flex items-center gap-1"
+                        >
+                          {editorQrCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          {editorQrCopied ? 'Copiado' : 'Copiar'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Buttons PNG & SVG */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <a
+                        href={getQrCodeUrl(project.id, 'png', editorQrColor, editorQrBgColor)}
+                        download={`qr_${project.slug}.png`}
+                        className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-pink-600 text-white font-bold text-xs hover:bg-pink-500 shadow-md transition"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Descargar PNG
+                      </a>
+                      <a
+                        href={getQrCodeUrl(project.id, 'svg', editorQrColor, editorQrBgColor)}
+                        download={`qr_${project.slug}.svg`}
+                        className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-800 text-slate-200 font-bold text-xs hover:bg-slate-700 transition"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Descargar SVG
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
         </main>
       </div>
+
+      {showQrModal && (
+        <QrAndCardModal
+          project={project}
+          onClose={() => setShowQrModal(false)}
+        />
+      )}
     </div>
   );
 };

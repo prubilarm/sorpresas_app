@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "start": "node packages/backend/dist/server.js",
-    "build": "npm --prefix packages/shared run build && npm --prefix packages/backend run build",
+    "build": "npm run build:shared && npm run build:backend && npm run build:web",
     "dev:backend": "npm --prefix packages/backend run dev",
     "dev:web": "npm --prefix apps/web run dev",
     "dev:mobile": "npm --prefix apps/mobile run dev",
