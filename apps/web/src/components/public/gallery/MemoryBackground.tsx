@@ -1,5 +1,6 @@
 import React from 'react';
 import { MediaItem, ThemeConfig } from '@recuerdos-qr/shared';
+import { resolveMediaUrl } from '../../../services/api';
 
 interface MemoryBackgroundProps {
   currentPhoto: MediaItem | null;
@@ -16,7 +17,7 @@ export const MemoryBackground: React.FC<MemoryBackgroundProps> = ({ currentPhoto
           className="absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-40 scale-125 filter blur-3xl saturate-150"
         >
           <img
-            src={currentPhoto.public_url}
+            src={resolveMediaUrl(currentPhoto.public_url)}
             alt=""
             aria-hidden="true"
             className="w-full h-full object-cover"

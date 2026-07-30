@@ -8,10 +8,48 @@ import { MemoryStoryGallery } from '../../components/public/gallery/MemoryStoryG
 import { CinematicMemoryGallery } from '../../components/public/gallery/CinematicMemoryGallery';
 import { GiftExperience } from '../../components/public/GiftExperience';
 
-const readFileAsDataUrl = (file: File): Promise<string> => {
+const compressImageFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1920;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        } else {
+          resolve(e.target?.result as string);
+        }
+      };
+      img.onerror = () => resolve(e.target?.result as string);
+      img.src = e.target?.result as string;
+    };
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
@@ -167,14 +205,17 @@ export const ProjectEditor: React.FC = () => {
     if (!files.length || !project) return;
 
     e.target.value = '';
-
     setUploading(true);
+
     try {
+      const newMediaList: any[] = [];
+      let updatedSections = [...sections];
+
       for (const file of files) {
         let fileDataUrl = '';
         if (file.type.startsWith('image/')) {
           try {
-            fileDataUrl = await readFileAsDataUrl(file);
+            fileDataUrl = await compressImageFile(file);
           } catch (e) {}
         }
 
@@ -183,7 +224,7 @@ export const ProjectEditor: React.FC = () => {
           const res = await uploadMediaFile(project.id, file);
           mediaItem = res.media;
         } catch (serverErr) {
-          console.warn('Server upload warning, using local Data URL:', serverErr);
+          console.warn('Server upload warning, using compressed Data URL:', serverErr);
           if (fileDataUrl) {
             mediaItem = {
               id: `med_local_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -191,7 +232,7 @@ export const ProjectEditor: React.FC = () => {
               media_type: 'image',
               public_url: fileDataUrl,
               original_filename: file.name,
-              position: media.length + 1,
+              position: media.length + newMediaList.length + 1,
             };
           } else {
             throw serverErr;
@@ -200,33 +241,42 @@ export const ProjectEditor: React.FC = () => {
 
         const finalUrl = resolveMediaUrl(mediaItem.public_url) || fileDataUrl;
         mediaItem.public_url = finalUrl;
-
-        setMedia((prev) => [...prev, mediaItem]);
+        newMediaList.push(mediaItem);
 
         if (targetSection === 'hero') {
-          setSections((prev) =>
-            prev.map((sec) =>
-              sec.section_type === 'hero'
-                ? { ...sec, settings_json: { ...sec.settings_json, cover: finalUrl } }
-                : sec
-            )
+          updatedSections = updatedSections.map((sec) =>
+            sec.section_type === 'hero'
+              ? { ...sec, settings_json: { ...sec.settings_json, cover: finalUrl } }
+              : sec
           );
           break;
         } else if (mediaItem.media_type === 'video' || targetSection === 'video') {
-          setSections((prev) =>
-            prev.map((sec) =>
-              sec.section_type === 'video'
-                ? { ...sec, settings_json: { ...sec.settings_json, videoUrl: finalUrl } }
-                : sec
-            )
+          updatedSections = updatedSections.map((sec) =>
+            sec.section_type === 'video'
+              ? { ...sec, settings_json: { ...sec.settings_json, videoUrl: finalUrl } }
+              : sec
           );
           break;
         }
       }
+
+      const allMedia = [...media, ...newMediaList];
+      setMedia(allMedia);
+      setSections(updatedSections);
+
+      // Auto-save project changes to database so mobile devices see the photos immediately
+      setSaving(true);
+      await updateProject(project.id, {
+        ...project,
+        sections: updatedSections,
+      });
+      setSaveStatus('¡Fotos subidas y guardadas! ✓');
+      setTimeout(() => setSaveStatus('Cambios guardados'), 3000);
     } catch (err: any) {
-      alert(err.message || 'Error al procesar el archivo.');
+      alert(err.message || 'Error al procesar las imágenes.');
     } finally {
       setUploading(false);
+      setSaving(false);
     }
   };
 

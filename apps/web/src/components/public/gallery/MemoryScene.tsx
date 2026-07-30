@@ -1,5 +1,6 @@
 import React from 'react';
 import { MediaItem, ThemeConfig } from '@recuerdos-qr/shared';
+import { resolveMediaUrl } from '../../../services/api';
 
 interface MemorySceneProps {
   currentPhoto: MediaItem;
@@ -30,8 +31,11 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
 
   const isScrapbook = theme?.id === 'friendship_fun';
   const isPolaroid = theme?.id === 'polaroid';
-  const isChildish = theme?.id === 'childish';
   const isBW = currentPhoto.is_bw;
+
+  const currentUrl = resolveMediaUrl(currentPhoto.public_url);
+  const prevUrl = prevPhoto ? resolveMediaUrl(prevPhoto.public_url) : '';
+  const nextUrl = nextPhoto ? resolveMediaUrl(nextPhoto.public_url) : '';
 
   return (
     <div className="relative w-full max-w-[900px] h-[480px] sm:h-[560px] mx-auto flex items-center justify-center select-none overflow-hidden touch-pan-y">
@@ -47,7 +51,7 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
             background: theme?.cardBg || 'rgba(0,0,0,0.5)',
           }}
         >
-          <img src={prevPhoto.public_url} alt="" aria-hidden="true" className="w-full h-full object-cover" />
+          <img src={prevUrl} alt="" aria-hidden="true" className="w-full h-full object-cover" />
         </div>
       )}
 
@@ -70,7 +74,7 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
         {isLandscape && (
           <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             <img
-              src={currentPhoto.public_url}
+              src={currentUrl}
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover blur-2xl opacity-40 scale-125"
@@ -82,7 +86,7 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
         {/* Main Photo Frame */}
         <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden bg-black/40 flex items-center justify-center">
           <img
-            src={currentPhoto.public_url}
+            src={currentUrl}
             alt={currentPhoto.caption || 'Fotografía de recuerdo'}
             className={`w-full h-full ${isLandscape ? 'object-contain' : 'object-cover'} transition-all duration-500 ${
               isBW ? 'filter grayscale contrast-110' : ''
@@ -103,7 +107,7 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
             background: theme?.cardBg || 'rgba(0,0,0,0.5)',
           }}
         >
-          <img src={nextPhoto.public_url} alt="" aria-hidden="true" className="w-full h-full object-cover" />
+          <img src={nextUrl} alt="" aria-hidden="true" className="w-full h-full object-cover" />
         </div>
       )}
     </div>
