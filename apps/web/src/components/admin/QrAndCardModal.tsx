@@ -668,9 +668,10 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                     </a>
                   </div>
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
+        )}
 
           {activeTab === 'qr' && (
             <div className="space-y-6">

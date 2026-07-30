@@ -49,7 +49,7 @@ export const CardCanvasEditor: React.FC<CardCanvasEditorProps> = ({
 }) => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [activeElement, setActiveElement] = useState<'qr' | 'kicker' | 'names' | 'message'>('names');
-  const [dragging, setDragging] = useState<string | null>(null);
+  const [dragging, setDragging] = useState<'qr' | 'kicker' | 'names' | 'message' | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const currentConfig = config.enabled ? config : DEFAULT_CANVAS_CONFIG;
@@ -86,11 +86,12 @@ export const CardCanvasEditor: React.FC<CardCanvasEditorProps> = ({
     let pctX = Math.max(2, Math.min(85, (mousePxX / rect.width) * 100));
     let pctY = Math.max(2, Math.min(85, (mousePxY / rect.height) * 100));
 
+    const targetKey = dragging;
     const updated = {
       ...currentConfig,
       enabled: true,
-      [dragging]: {
-        ...currentConfig[dragging as keyof CustomCanvasConfig],
+      [targetKey]: {
+        ...currentConfig[targetKey],
         x: Math.round(pctX * 10) / 10,
         y: Math.round(pctY * 10) / 10,
       },
