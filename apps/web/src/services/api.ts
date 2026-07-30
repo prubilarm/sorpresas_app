@@ -51,6 +51,7 @@ export function getQrCodeUrl(
     format,
     color,
     bgColor,
+    _t: Date.now().toString()
   });
   if (slug) {
     params.append('targetUrl', getPublicGiftUrl(slug));

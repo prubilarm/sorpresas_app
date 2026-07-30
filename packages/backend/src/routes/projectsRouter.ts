@@ -498,13 +498,22 @@ projectsRouter.get('/:id/video/download', async (req, res) => {
   const recipientName = project.recipient_name || project.person_two_name || 'destinatario';
   const safeFilename = `video-recuerdo-${recipientName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.mp4`;
 
-  let localFilePath = path.join(__dirname, '../../', videoUrl.replace('/uploads/', 'uploads/'));
+  // Parse URL to handle both relative and absolute paths
+  let urlPath = videoUrl;
+  try {
+    urlPath = new URL(videoUrl).pathname;
+  } catch(e) { /* keep as is if not a full URL */ }
+
+  // Clean the path to get just the uploads/... part
+  const cleanPath = urlPath.replace(/^.*\/uploads\//, 'uploads/');
+
+  let localFilePath = path.join(__dirname, '../../', cleanPath);
   if (!fs.existsSync(localFilePath)) {
-    localFilePath = path.join(__dirname, '../../../web/public', videoUrl);
+    localFilePath = path.join(__dirname, '../../../web/public', urlPath);
   }
 
   if (!fs.existsSync(localFilePath)) {
-    return res.status(404).json({ error: 'Archivo de video no encontrado en el servidor' });
+    return res.status(404).json({ error: 'Archivo de video no encontrado en el servidor', url: videoUrl, localFilePath });
   }
 
   if (type === 'optimized') {
