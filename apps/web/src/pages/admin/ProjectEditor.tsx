@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchProjectById, updateProject, uploadMediaFile, deleteMediaFile, createProjectExport, fetchProjectExports, deleteProjectExport, resolveMediaUrl, getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl } from '../../services/api';
+import { fetchProjectById, updateProject, uploadMediaFile, deleteMediaFile, createProjectExport, fetchProjectExports, deleteProjectExport, resolveMediaUrl, getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl, API_BASE } from '../../services/api';
 import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2, Copy, ExternalLink, Printer, Share2, Palette, Edit3, Layout, Maximize2, Shield, Move } from 'lucide-react';
 import { THEMES, ThemeId, generateDefaultGiftPreset } from '@recuerdos-qr/shared';
 import { NumberPicker } from '../../components/admin/NumberPicker';
