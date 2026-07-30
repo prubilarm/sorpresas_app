@@ -35,17 +35,17 @@ app.use('/assets', express.static(assetsPath));
 // Setup Swagger UI Documentation
 setupSwagger(app);
 
-// Universal Direct Redirect Catch-All for Mobile Camera Scans on Railway Backend (/r/* -> Vercel Frontend)
-const handleRedirectToVercel = (req: express.Request, res: express.Response) => {
-  const frontendBase = process.env.FRONTEND_URL || 'https://sorpresas-app-web.vercel.app';
-  const fullPath = req.originalUrl || req.url;
-  const targetUrl = `${frontendBase.replace(/\/$/, '')}${fullPath}`;
-  console.log(`[Redirect 302] Redirecting mobile scan '${req.method} ${fullPath}' to ${targetUrl}`);
-  return res.redirect(302, targetUrl);
-};
-
-app.get('/r/:slug', handleRedirectToVercel);
-app.all('/r*', handleRedirectToVercel);
+// Universal Top-Level Middleware: Catch ANY request to /r/* and 302 redirect to Vercel Frontend
+app.use((req, res, next) => {
+  const reqPath = req.path || req.originalUrl || '';
+  if (reqPath.startsWith('/r/') || reqPath === '/r') {
+    const frontendBase = process.env.FRONTEND_URL || 'https://sorpresas-app-web.vercel.app';
+    const targetUrl = `${frontendBase.replace(/\/$/, '')}${reqPath}`;
+    console.log(`[Top-Level QR Scan 302] Intercepted ${req.method} ${reqPath} -> Redirecting to ${targetUrl}`);
+    return res.redirect(302, targetUrl);
+  }
+  next();
+});
 
 // Mount API Routers
 app.use('/api/auth', authRouter);

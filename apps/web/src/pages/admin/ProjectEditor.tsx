@@ -1732,7 +1732,7 @@ export const ProjectEditor: React.FC = () => {
                   {videoSec.settings_json?.videoUrl && (
                     <>
                       <a
-                        href={`http://localhost:4000/api/projects/${project.id}/video/download?type=original`}
+                        href={`${API_BASE}/projects/${project.id}/video/download?type=original`}
                         download
                         className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition"
                       >
@@ -1740,7 +1740,7 @@ export const ProjectEditor: React.FC = () => {
                         Descargar Original
                       </a>
                       <a
-                        href={`http://localhost:4000/api/projects/${project.id}/video/download?type=optimized`}
+                        href={`${API_BASE}/projects/${project.id}/video/download?type=optimized`}
                         download
                         className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition"
                       >
