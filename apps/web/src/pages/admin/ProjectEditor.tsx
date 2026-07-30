@@ -1901,7 +1901,7 @@ export const ProjectEditor: React.FC = () => {
                         <div className="flex items-center gap-2">
                           {job.status === 'completed' && job.output_url && (
                             <a
-                              href={`http://localhost:4000/api/projects/${project.id}/exports/${job.id}/download`}
+                              href={`${API_BASE}/projects/${project.id}/exports/${job.id}/download`}
                               download
                               className="py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition"
                             >

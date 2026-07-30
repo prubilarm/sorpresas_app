@@ -36,10 +36,11 @@ app.use('/assets', express.static(assetsPath));
 setupSwagger(app);
 
 // Direct Redirect Catch-All for Mobile Camera Scans on Railway Backend (/r/* -> Vercel Frontend)
-app.get(['/r/:slug', '/r/*'], (req, res) => {
+app.use('/r', (req, res) => {
   const frontendBase = process.env.FRONTEND_URL || 'https://sorpresas-app-web.vercel.app';
-  const targetUrl = `${frontendBase.replace(/\/$/, '')}${req.path}`;
-  console.log(`[Redirect] Redirecting mobile scan for '${req.path}' to ${targetUrl}`);
+  const cleanPath = req.originalUrl || `/r${req.url}`;
+  const targetUrl = `${frontendBase.replace(/\/$/, '')}${cleanPath}`;
+  console.log(`[Redirect] Redirecting mobile scan for '${cleanPath}' to ${targetUrl}`);
   return res.redirect(302, targetUrl);
 });
 
