@@ -5,26 +5,47 @@ export const API_BASE =
     ? 'http://localhost:4000/api'
     : 'https://recuerdos-qrweb-production.up.railway.app/api';
 
-export function getPrintableCardUrl(projectId: string): string {
-  return `${API_BASE}/projects/${projectId}/card`;
+export function getPrintableCardUrl(
+  projectId: string,
+  slug?: string,
+  options?: { styleId?: string; kicker?: string; message?: string; names?: string }
+): string {
+  const params = new URLSearchParams();
+  if (slug) {
+    params.append('targetUrl', getPublicGiftUrl(slug));
+  }
+  if (options?.styleId) params.append('styleId', options.styleId);
+  if (options?.kicker) params.append('kicker', options.kicker);
+  if (options?.message) params.append('message', options.message);
+  if (options?.names) params.append('names', options.names);
+
+  const queryStr = params.toString();
+  return `${API_BASE}/projects/${projectId}/card${queryStr ? '?' + queryStr : ''}`;
 }
 
 export function getQrCodeUrl(
   projectId: string,
   format: 'png' | 'svg' = 'png',
   color: string = '#e83482',
-  bgColor: string = '#ffffff'
+  bgColor: string = '#ffffff',
+  slug?: string
 ): string {
   const params = new URLSearchParams({
     format,
     color,
     bgColor,
   });
+  if (slug) {
+    params.append('targetUrl', getPublicGiftUrl(slug));
+  }
   return `${API_BASE}/projects/${projectId}/qr?${params.toString()}`;
 }
 
 export function getPublicGiftUrl(slug: string): string {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+  const origin =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : 'https://sorpresas-app-web.vercel.app';
   return `${origin}/r/${slug}`;
 }
 

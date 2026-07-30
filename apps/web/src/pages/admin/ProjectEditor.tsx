@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchProjectById, updateProject, uploadMediaFile, deleteMediaFile, createProjectExport, fetchProjectExports, deleteProjectExport, resolveMediaUrl, getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl } from '../../services/api';
-import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2, Copy, ExternalLink, Printer, Share2 } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2, Copy, ExternalLink, Printer, Share2, Palette, Edit3 } from 'lucide-react';
 import { THEMES, ThemeId, generateDefaultGiftPreset } from '@recuerdos-qr/shared';
 import { NumberPicker } from '../../components/admin/NumberPicker';
 import { MemoryStoryGallery } from '../../components/public/gallery/MemoryStoryGallery';
 import { CinematicMemoryGallery } from '../../components/public/gallery/CinematicMemoryGallery';
 import { GiftExperience } from '../../components/public/GiftExperience';
-import { QrAndCardModal } from '../../components/admin/QrAndCardModal';
+import { QrAndCardModal, CARD_STYLES } from '../../components/admin/QrAndCardModal';
 
 const compressImageFile = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -1919,73 +1919,167 @@ export const ProjectEditor: React.FC = () => {
               </div>
 
               {/* 1. Tarjeta de Presentación Imprimible (9x9 cm) */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-pink-400" />
-                  1. Tarjeta de Presentación Física (9 x 9 cm)
-                </h3>
+              <div className="space-y-6">
+                {/* Style Selector */}
+                <div className="space-y-3">
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                    <Palette className="w-4 h-4 text-pink-400" />
+                    Selecciona 1 de los 5 Estilos de Tarjeta Elegantes
+                  </label>
 
-                <div className="flex flex-col lg:flex-row items-center gap-8 bg-slate-950/60 p-6 rounded-2xl border border-slate-800">
-                  {/* Physical 9x9 cm Card Interactive Mockup */}
-                  <div
-                    className="relative w-72 h-72 rounded-2xl p-6 shadow-2xl flex flex-col justify-between overflow-hidden border border-white/10 select-none flex-shrink-0"
-                    style={{ background: 'radial-gradient(circle at top, #67143a, #27000f 65%)' }}
-                  >
-                    <div className="space-y-1.5">
-                      <span className="block uppercase text-[9px] tracking-widest text-pink-300 font-bold">
-                        Hecho especialmente para
-                      </span>
-                      <h4 className="text-xl font-serif font-bold text-white leading-tight">
-                        {project.person_one_name || project.sender_name || 'Remitente'} &amp;{' '}
-                        {project.person_two_name || project.recipient_name || 'Destinatario'}
-                      </h4>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <p className="text-[10px] leading-relaxed text-pink-100/90 flex-1">
-                        Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.
-                      </p>
-                      <div className="w-20 h-20 bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0">
-                        <img
-                          src={getQrCodeUrl(project.id, 'png', '#27000f', '#ffffff')}
-                          alt="Código QR Tarjeta"
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions & Instructions */}
-                  <div className="space-y-4 flex-1 text-slate-300 text-sm">
-                    <div className="space-y-1.5">
-                      <h4 className="text-base font-bold text-white">Documento PDF Vectorial de Alta Resolución</h4>
-                      <p className="text-xs text-slate-400 leading-relaxed">
-                        Formato estándar de imprenta de <strong>9 cm x 9 cm</strong> listo para imprimir en cartulina mate o papel fotográfico brillante.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3 pt-2">
-                      <a
-                        href={getPrintableCardUrl(project.id)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 py-3 px-6 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-bold text-white text-sm shadow-lg hover:brightness-110 active:scale-95 transition"
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {CARD_STYLES.map((style) => (
+                      <button
+                        key={style.id}
+                        onClick={() => setEditorCardStyleId(style.id)}
+                        className={`p-3 rounded-2xl border text-left transition relative overflow-hidden flex flex-col justify-between h-24 cursor-pointer ${
+                          editorCardStyleId === style.id
+                            ? 'border-pink-500 ring-2 ring-pink-500/50 shadow-xl scale-[1.02]'
+                            : 'border-slate-800 hover:border-slate-700 opacity-80 hover:opacity-100'
+                        }`}
+                        style={{ background: style.bgStyle }}
                       >
-                        <Download className="w-4 h-4" />
-                        Descargar Tarjeta PDF (9x9 cm)
-                      </a>
-                      <a
-                        href={getPrintableCardUrl(project.id)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-2 py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition"
-                      >
-                        <Printer className="w-4 h-4" />
-                        Abrir / Imprimir
-                      </a>
-                    </div>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${style.badgeBg}`}>
+                            {style.tag}
+                          </span>
+                          {editorCardStyleId === style.id && (
+                            <div className="w-4 h-4 rounded-full bg-pink-500 text-white flex items-center justify-center">
+                              <Check className="w-3 h-3" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <span className="block text-xs font-bold truncate" style={{ color: style.namesColor }}>
+                            {style.name}
+                          </span>
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="w-2.5 h-2.5 rounded-full border border-white/20" style={{ backgroundColor: style.borderColor }} />
+                            <span className="w-2.5 h-2.5 rounded-full border border-white/20" style={{ backgroundColor: style.kickerColor }} />
+                          </div>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
+
+                {/* Live Card Mockup & Customization Inputs */}
+                {(() => {
+                  const currentTheme = CARD_STYLES.find((s) => s.id === editorCardStyleId) || CARD_STYLES[0];
+                  const currentPdfUrl = getPrintableCardUrl(project.id, project.slug, {
+                    styleId: editorCardStyleId,
+                    kicker: editorCardKicker,
+                    message: editorCardMessage,
+                    names: editorCardNames || `${project.sender_name || 'Remitente'} & ${project.recipient_name || 'Destinatario'}`,
+                  });
+                  const currentQrUrl = getQrCodeUrl(project.id, 'png', currentTheme.qrDark, currentTheme.qrLight, project.slug);
+
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start bg-slate-950/60 p-6 rounded-2xl border border-slate-800">
+                      {/* Physical Card Mockup */}
+                      <div className="md:col-span-6 flex flex-col items-center justify-center">
+                        <div
+                          className="relative w-72 h-72 rounded-2xl p-5 shadow-2xl flex flex-col justify-between overflow-hidden border transition-all duration-500"
+                          style={{
+                            background: currentTheme.bgStyle,
+                            borderColor: currentTheme.borderColor,
+                            boxShadow: `0 20px 50px rgba(0,0,0,0.6), inset 0 0 0 1px ${currentTheme.innerBorderColor}`,
+                          }}
+                        >
+                          <div
+                            className="absolute inset-2.5 pointer-events-none rounded-xl border"
+                            style={{ borderColor: currentTheme.innerBorderColor }}
+                          />
+                          <div className="absolute top-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
+                          <div className="absolute top-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
+                          <div className="absolute bottom-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
+                          <div className="absolute bottom-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: currentTheme.borderColor }} />
+
+                          <div className="space-y-1 z-10">
+                            <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: currentTheme.kickerColor }}>
+                              {editorCardKicker || 'HECHO ESPECIALMENTE PARA'}
+                            </span>
+                            <h4 className={`text-lg font-bold leading-tight truncate ${currentTheme.fontTitle}`} style={{ color: currentTheme.namesColor }}>
+                              {editorCardNames || `${project.sender_name || 'Remitente'} & ${project.recipient_name || 'Destinatario'}`}
+                            </h4>
+                          </div>
+
+                          <div className="flex items-center gap-3 z-10">
+                            <p className="text-[10px] leading-snug font-serif italic flex-1" style={{ color: currentTheme.messageColor }}>
+                              {editorCardMessage || 'Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.'}
+                            </p>
+                            <div className="w-20 h-20 bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border" style={{ borderColor: currentTheme.borderColor }}>
+                              <img src={currentQrUrl} alt="Código QR Tarjeta" className="w-full h-full object-contain" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Inputs & Actions */}
+                      <div className="md:col-span-6 space-y-4">
+                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                          <Edit3 className="w-4 h-4 text-pink-400" />
+                          Contenidos Editables de la Tarjeta
+                        </h4>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-400 mb-1">Encabezado Superior</label>
+                          <input
+                            type="text"
+                            value={editorCardKicker}
+                            onChange={(e) => setEditorCardKicker(e.target.value)}
+                            placeholder="Ej: HECHO ESPECIALMENTE PARA"
+                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-400 mb-1">Nombres Principales</label>
+                          <input
+                            type="text"
+                            value={editorCardNames}
+                            onChange={(e) => setEditorCardNames(e.target.value)}
+                            placeholder="Ej: Hans & Tamara"
+                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-400 mb-1">Mensaje Dedicatorio</label>
+                          <textarea
+                            value={editorCardMessage}
+                            onChange={(e) => setEditorCardMessage(e.target.value)}
+                            rows={3}
+                            placeholder="Ej: Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor."
+                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-serif italic"
+                          />
+                        </div>
+
+                        <div className="flex flex-wrap gap-3 pt-2">
+                          <a
+                            href={currentPdfUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-bold text-white text-xs shadow-lg hover:brightness-110 active:scale-95 transition"
+                          >
+                            <Download className="w-4 h-4" />
+                            Descargar Tarjeta PDF (9x9 cm)
+                          </a>
+                          <a
+                            href={currentPdfUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition"
+                          >
+                            <Printer className="w-4 h-4" />
+                            Imprimir
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* 2. Personalizador & Descargas de Código QR */}

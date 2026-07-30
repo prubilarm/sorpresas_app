@@ -41,13 +41,22 @@ qrRouter.get('/:id/qr', async (req, res) => {
   const color = (req.query.color as string) || '#e83482';
   const bgColor = (req.query.bgColor as string) || '#ffffff';
 
-  const frontendBase =
-    process.env.FRONTEND_URL ||
-    req.headers.origin ||
-    (req.headers.referer ? new URL(req.headers.referer).origin : null) ||
-    `http://${(req.get('host') || 'localhost:3000').replace(':4000', ':3000')}`;
+  const explicitTargetUrl = req.query.targetUrl as string;
+  const explicitBaseUrl = req.query.baseUrl as string;
 
-  const destinationUrl = `${frontendBase.replace(/\/$/, '')}/r/${project.slug}`;
+  let destinationUrl = '';
+  if (explicitTargetUrl) {
+    destinationUrl = explicitTargetUrl;
+  } else if (explicitBaseUrl) {
+    destinationUrl = `${explicitBaseUrl.replace(/\/$/, '')}/r/${project.slug}`;
+  } else {
+    const frontendBase =
+      process.env.FRONTEND_URL ||
+      req.headers.origin ||
+      (req.headers.referer ? new URL(req.headers.referer).origin : null) ||
+      'https://sorpresas-app-web.vercel.app';
+    destinationUrl = `${frontendBase.replace(/\/$/, '')}/r/${project.slug}`;
+  }
 
   try {
     if (format === 'svg') {

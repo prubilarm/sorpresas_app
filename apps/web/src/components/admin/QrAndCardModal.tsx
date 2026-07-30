@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, QrCode, FileText, Copy, Check, Download, ExternalLink, Sparkles, Printer, Share2 } from 'lucide-react';
+import { X, QrCode, FileText, Copy, Check, Download, ExternalLink, Sparkles, Printer, Share2, Palette, Edit3, Heart } from 'lucide-react';
 import { getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl } from '../../services/api';
 
 interface QrAndCardModalProps {
@@ -7,18 +7,128 @@ interface QrAndCardModalProps {
   onClose: () => void;
 }
 
+export interface CardStylePreset {
+  id: string;
+  name: string;
+  tag: string;
+  bgStyle: string;
+  borderColor: string;
+  innerBorderColor: string;
+  kickerColor: string;
+  namesColor: string;
+  messageColor: string;
+  qrDark: string;
+  qrLight: string;
+  badgeBg: string;
+}
+
+export const CARD_STYLES: CardStylePreset[] = [
+  {
+    id: 'midnight_velvet',
+    name: 'Terciopelo Nocturno & Oro',
+    tag: 'Romántico & Clásico',
+    bgStyle: 'radial-gradient(circle at top, #380c1d, #1a050f 75%)',
+    borderColor: '#d4af37',
+    innerBorderColor: 'rgba(212, 175, 55, 0.4)',
+    kickerColor: '#e2b857',
+    namesColor: '#ffffff',
+    messageColor: '#f4cedd',
+    qrDark: '#27000f',
+    qrLight: '#ffffff',
+    badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+  },
+  {
+    id: 'rose_onyx',
+    name: 'Oro Rosa & Ónix',
+    tag: 'Sutileza & Lujo Moderno',
+    bgStyle: 'linear-gradient(145deg, #1e1b26, #0d0f12)',
+    borderColor: '#e86b8b',
+    innerBorderColor: 'rgba(232, 107, 139, 0.4)',
+    kickerColor: '#f4a298',
+    namesColor: '#ffffff',
+    messageColor: '#f8d3d9',
+    qrDark: '#1e1b26',
+    qrLight: '#ffffff',
+    badgeBg: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+  },
+  {
+    id: 'minimal_linen',
+    name: 'Lino Minimalista & Blanco',
+    tag: 'Alta Costura & Limpieza',
+    bgStyle: 'linear-gradient(180deg, #ffffff, #faf8f5)',
+    borderColor: '#a88647',
+    innerBorderColor: 'rgba(168, 134, 71, 0.35)',
+    kickerColor: '#8c6c2e',
+    namesColor: '#1a1a1a',
+    messageColor: '#4a4a4a',
+    qrDark: '#1a1a1a',
+    qrLight: '#ffffff',
+    badgeBg: 'bg-amber-100 text-amber-900 border-amber-300',
+  },
+  {
+    id: 'emerald_passion',
+    name: 'Esmeralda Real & Champaña',
+    tag: 'Majestuoso & Exclusivo',
+    bgStyle: 'radial-gradient(circle at top, #0d3a29, #051f15 80%)',
+    borderColor: '#f3e5ab',
+    innerBorderColor: 'rgba(243, 229, 171, 0.4)',
+    kickerColor: '#f3e5ab',
+    namesColor: '#ffffff',
+    messageColor: '#d1e8df',
+    qrDark: '#051f15',
+    qrLight: '#ffffff',
+    badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+  },
+  {
+    id: 'celestial_night',
+    name: 'Noche Celestial & Plateado',
+    tag: 'Estelar & Eterno',
+    bgStyle: 'linear-gradient(135deg, #111a36, #060b1e)',
+    borderColor: '#d1d5db',
+    innerBorderColor: 'rgba(209, 213, 219, 0.4)',
+    kickerColor: '#e5e7eb',
+    namesColor: '#ffffff',
+    messageColor: '#dbeafe',
+    qrDark: '#060b1e',
+    qrLight: '#ffffff',
+    badgeBg: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+  },
+];
+
 export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose }) => {
   const [activeTab, setActiveTab] = useState<'card' | 'qr'>('card');
   const [qrColor, setQrColor] = useState('#e83482');
   const [qrBgColor, setQrBgColor] = useState('#ffffff');
   const [copied, setCopied] = useState(false);
 
+  // Card customization states
   const sender = project.sender_name || project.person_one_name || 'Remitente';
   const recipient = project.recipient_name || project.person_two_name || 'Destinatario';
+  const initialNames = `${sender} & ${recipient}`;
+
+  const savedCardSettings = project.settings_json?.card_settings || {};
+  const [cardStyleId, setCardStyleId] = useState<string>(savedCardSettings.styleId || 'midnight_velvet');
+  const [cardKicker, setCardKicker] = useState<string>(savedCardSettings.kicker || 'HECHO ESPECIALMENTE PARA');
+  const [cardMessage, setCardMessage] = useState<string>(
+    savedCardSettings.message || 'Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.'
+  );
+  const [cardNames, setCardNames] = useState<string>(savedCardSettings.names || initialNames);
+
+  const selectedTheme = CARD_STYLES.find((s) => s.id === cardStyleId) || CARD_STYLES[0];
   const publicUrl = getPublicGiftUrl(project.slug);
-  const pdfUrl = getPrintableCardUrl(project.id);
-  const pngQrUrl = getQrCodeUrl(project.id, 'png', qrColor, qrBgColor);
-  const svgQrUrl = getQrCodeUrl(project.id, 'svg', qrColor, qrBgColor);
+
+  const pdfUrl = getPrintableCardUrl(project.id, project.slug, {
+    styleId: cardStyleId,
+    kicker: cardKicker,
+    message: cardMessage,
+    names: cardNames,
+  });
+
+  const pngQrUrl = getQrCodeUrl(project.id, 'png', selectedTheme.qrDark, selectedTheme.qrLight, project.slug);
+  const svgQrUrl = getQrCodeUrl(project.id, 'svg', selectedTheme.qrDark, selectedTheme.qrLight, project.slug);
+
+  const customPngQrUrl = getQrCodeUrl(project.id, 'png', qrColor, qrBgColor, project.slug);
+  const customSvgQrUrl = getQrCodeUrl(project.id, 'svg', qrColor, qrBgColor, project.slug);
 
   const whatsappMessage = encodeURIComponent(
     `¡Hola! Tu experiencia de regalo personalizada ya está lista. Puedes verla aquí: ${publicUrl}\n\nO escanea el código QR que te adjuntamos. ¡Esperamos que te emocione mucho! ❤️`
@@ -49,27 +159,27 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-fadeIn select-none">
+      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-950/60 border-b border-slate-800">
+        <div className="flex items-center justify-between px-6 py-4 bg-slate-950/70 border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-pink-500/10 border border-pink-500/30 text-pink-400">
               <QrCode className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-white leading-tight">
-                Código QR y Tarjeta de Presentación
+                Código QR &amp; Tarjetas Elegantes (9x9 cm)
               </h2>
               <p className="text-xs text-slate-400">
-                {project.internal_name} ({sender} & {recipient})
+                {project.internal_name} ({cardNames})
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -79,26 +189,26 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
         <div className="flex border-b border-slate-800 bg-slate-950/40 px-6 pt-2">
           <button
             onClick={() => setActiveTab('card')}
-            className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-bold transition ${
+            className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-bold transition cursor-pointer ${
               activeTab === 'card'
                 ? 'border-pink-500 text-pink-400 bg-pink-500/10 rounded-t-xl'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <FileText className="w-4 h-4" />
-            Tarjeta de Presentación (9x9 cm)
+            Personalizar Tarjeta Física (9x9 cm)
           </button>
 
           <button
             onClick={() => setActiveTab('qr')}
-            className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-bold transition ${
+            className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-bold transition cursor-pointer ${
               activeTab === 'qr'
                 ? 'border-pink-500 text-pink-400 bg-pink-500/10 rounded-t-xl'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <QrCode className="w-4 h-4" />
-            Personalizador de Código QR
+            Personalizar Código QR Digital
           </button>
         </div>
 
@@ -106,47 +216,166 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {activeTab === 'card' && (
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 bg-slate-950/50 p-6 rounded-2xl border border-slate-800">
-                {/* Visual 9cm x 9cm Physical Card Mockup */}
-                <div className="relative w-64 h-64 rounded-2xl p-5 shadow-2xl flex flex-col justify-between overflow-hidden border border-white/10 select-none"
-                     style={{ background: 'radial-gradient(circle at top, #67143a, #27000f 65%)' }}>
-                  <div className="space-y-1">
-                    <span className="block uppercase text-[9px] tracking-widest text-pink-300 font-bold">
-                      Hecho especialmente para
-                    </span>
-                    <h3 className="text-lg font-serif font-bold text-white leading-tight">
-                      {project.person_one_name || sender} &amp; {project.person_two_name || recipient}
-                    </h3>
-                  </div>
+              {/* 1. Theme Style Selector (5 Luxury Presets) */}
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-pink-400" />
+                  Elige 1 de los 5 Estilos de Tarjeta Elegantes
+                </label>
 
-                  <div className="flex items-center gap-3">
-                    <p className="text-[10px] leading-snug text-pink-100/90 flex-1">
-                      Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor.
-                    </p>
-                    <div className="w-20 h-20 bg-white p-1 rounded-lg shadow-inner flex items-center justify-center flex-shrink-0">
-                      <img src={pngQrUrl} alt="Código QR Imprimible" className="w-full h-full object-contain" />
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  {CARD_STYLES.map((style) => (
+                    <button
+                      key={style.id}
+                      onClick={() => setCardStyleId(style.id)}
+                      className={`p-3 rounded-2xl border text-left transition relative overflow-hidden flex flex-col justify-between h-24 cursor-pointer ${
+                        cardStyleId === style.id
+                          ? 'border-pink-500 ring-2 ring-pink-500/50 shadow-xl scale-[1.02]'
+                          : 'border-slate-800 hover:border-slate-700 opacity-80 hover:opacity-100'
+                      }`}
+                      style={{ background: style.bgStyle }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${style.badgeBg}`}>
+                          {style.tag}
+                        </span>
+                        {cardStyleId === style.id && (
+                          <div className="w-4 h-4 rounded-full bg-pink-500 text-white flex items-center justify-center">
+                            <Check className="w-3 h-3" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <span className="block text-xs font-bold truncate" style={{ color: style.namesColor }}>
+                          {style.name}
+                        </span>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="w-2.5 h-2.5 rounded-full border border-white/20" style={{ backgroundColor: style.borderColor }} />
+                          <span className="w-2.5 h-2.5 rounded-full border border-white/20" style={{ backgroundColor: style.kickerColor }} />
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. Live Interactive Mockup + Text Controls */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start bg-slate-950/60 p-6 rounded-2xl border border-slate-800">
+                {/* Physical 9x9cm Card Interactive Visual Frame */}
+                <div className="md:col-span-6 flex flex-col items-center justify-center">
+                  <div
+                    className="relative w-72 h-72 rounded-2xl p-5 shadow-2xl flex flex-col justify-between overflow-hidden border transition-all duration-500"
+                    style={{
+                      background: selectedTheme.bgStyle,
+                      borderColor: selectedTheme.borderColor,
+                      boxShadow: `0 20px 50px rgba(0,0,0,0.6), inset 0 0 0 1px ${selectedTheme.innerBorderColor}`,
+                    }}
+                  >
+                    {/* Double Line Border Overlay */}
+                    <div
+                      className="absolute inset-2.5 pointer-events-none rounded-xl border"
+                      style={{ borderColor: selectedTheme.innerBorderColor }}
+                    />
+
+                    {/* Corner Diamond Accents */}
+                    <div className="absolute top-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
+                    <div className="absolute top-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
+                    <div className="absolute bottom-2 left-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
+                    <div className="absolute bottom-2 right-2 w-1.5 h-1.5 rotate-45" style={{ backgroundColor: selectedTheme.borderColor }} />
+
+                    {/* Card Content Top Header */}
+                    <div className="space-y-1 z-10">
+                      <span
+                        className="block uppercase text-[8.5px] tracking-widest font-bold"
+                        style={{ color: selectedTheme.kickerColor }}
+                      >
+                        {cardKicker}
+                      </span>
+                      <h3
+                        className={`text-lg font-bold leading-tight truncate ${selectedTheme.fontTitle}`}
+                        style={{ color: selectedTheme.namesColor }}
+                      >
+                        {cardNames}
+                      </h3>
+                    </div>
+
+                    {/* Card Content Bottom Dedication & QR */}
+                    <div className="flex items-center gap-3 z-10">
+                      <p
+                        className="text-[10px] leading-snug font-serif italic flex-1"
+                        style={{ color: selectedTheme.messageColor }}
+                      >
+                        {cardMessage}
+                      </p>
+
+                      <div
+                        className="w-20 h-20 bg-white p-1 rounded-xl shadow-inner flex items-center justify-center flex-shrink-0 border"
+                        style={{ borderColor: selectedTheme.borderColor }}
+                      >
+                        <img src={pngQrUrl} alt="QR Tarjeta" className="w-full h-full object-contain" />
+                      </div>
                     </div>
                   </div>
+
+                  <span className="text-[11px] text-slate-500 mt-2 font-mono">
+                    Escala física real: 9 x 9 cm (300 DPI Vectorial)
+                  </span>
                 </div>
 
-                {/* Printable Card Instructions & Action Buttons */}
-                <div className="space-y-4 max-w-md text-slate-300 text-sm">
-                  <div className="space-y-1">
-                    <span className="text-xs font-bold text-pink-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" /> Tarjeta Física de Alta Resolución
-                    </span>
-                    <h4 className="text-base font-bold text-white">Listo para Imprimir</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Genera un PDFvectorial de exactamente <strong>9 x 9 cm</strong> listo para imprenta o impresora casera en papel fotográfico o cartulina opaca.
-                    </p>
+                {/* Text Editing Controls */}
+                <div className="md:col-span-6 space-y-4">
+                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                    <Edit3 className="w-4 h-4 text-pink-400" />
+                    Personalizar Contenidos de la Tarjeta
+                  </h4>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">
+                      Encabezado Superior
+                    </label>
+                    <input
+                      type="text"
+                      value={cardKicker}
+                      onChange={(e) => setCardKicker(e.target.value)}
+                      placeholder="Ej: HECHO ESPECIALMENTE PARA"
+                      className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
+                    />
                   </div>
 
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">
+                      Nombres Principales
+                    </label>
+                    <input
+                      type="text"
+                      value={cardNames}
+                      onChange={(e) => setCardNames(e.target.value)}
+                      placeholder="Ej: Hans & Tamara"
+                      className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">
+                      Mensaje Dedicatorio / Texto del Escáner
+                    </label>
+                    <textarea
+                      value={cardMessage}
+                      onChange={(e) => setCardMessage(e.target.value)}
+                      rows={3}
+                      placeholder="Ej: Escanea este código con la cámara de tu teléfono y descubre un recuerdo preparado con mucho amor."
+                      className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-serif italic"
+                    />
+                  </div>
+
+                  {/* Actions */}
                   <div className="pt-2 flex flex-col sm:flex-row gap-3">
                     <a
                       href={pdfUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-bold text-white text-sm shadow-lg hover:brightness-110 active:scale-95 transition"
+                      className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 font-bold text-white text-xs shadow-lg hover:brightness-110 active:scale-95 transition"
                     >
                       <Download className="w-4 h-4" />
                       Descargar Tarjeta PDF (9x9 cm)
@@ -155,8 +384,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                       href={pdfUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition"
-                      title="Abrir vista de impresión"
+                      className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition"
                     >
                       <Printer className="w-4 h-4" />
                       Imprimir
@@ -173,7 +401,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                 {/* Live QR Preview */}
                 <div className="flex flex-col items-center justify-center p-6 bg-slate-900 rounded-2xl border border-slate-800 space-y-4">
                   <div className="p-4 rounded-2xl shadow-xl transition-all duration-300" style={{ backgroundColor: qrBgColor }}>
-                    <img src={pngQrUrl} alt="QR Code Preview" className="w-48 h-48 object-contain" />
+                    <img src={customPngQrUrl} alt="QR Code Preview" className="w-48 h-48 object-contain" />
                   </div>
                   <span className="text-xs text-slate-400 font-mono text-center truncate max-w-full px-2">
                     {publicUrl}
@@ -183,7 +411,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                 {/* Color Customization & Format Controls */}
                 <div className="space-y-5 flex flex-col justify-between">
                   <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-white">Personalizar Código QR</h3>
+                    <h3 className="text-sm font-bold text-white">Personalizar Código QR Digital</h3>
                     
                     {/* Foreground Color */}
                     <div>
@@ -202,7 +430,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                             <button
                               key={c}
                               onClick={() => setQrColor(c)}
-                              className={`w-6 h-6 rounded-full border-2 transition ${
+                              className={`w-6 h-6 rounded-full border-2 transition cursor-pointer ${
                                 qrColor === c ? 'border-pink-500 scale-110' : 'border-transparent opacity-80 hover:opacity-100'
                               }`}
                               style={{ backgroundColor: c }}
@@ -229,7 +457,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                             <button
                               key={c}
                               onClick={() => setQrBgColor(c)}
-                              className={`w-6 h-6 rounded-full border-2 transition ${
+                              className={`w-6 h-6 rounded-full border-2 transition cursor-pointer ${
                                 qrBgColor === c ? 'border-pink-500 scale-110' : 'border-transparent opacity-80 hover:opacity-100'
                               }`}
                               style={{ backgroundColor: c }}
@@ -254,7 +482,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                       />
                       <button
                         onClick={handleCopyUrl}
-                        className="px-3 py-1.5 rounded-lg bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white border border-pink-500/30 text-xs font-bold transition flex items-center gap-1"
+                        className="px-3 py-1.5 rounded-lg bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white border border-pink-500/30 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                       >
                         {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                         {copied ? 'Copiado' : 'Copiar'}
@@ -265,15 +493,15 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
                   {/* Downloads Footer Actions */}
                   <div className="grid grid-cols-2 gap-3">
                     <button
-                      onClick={() => handleDownloadFile(pngQrUrl, `qr_${project.slug}.png`)}
-                      className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-pink-600 text-white font-bold text-xs hover:bg-pink-500 shadow-md transition"
+                      onClick={() => handleDownloadFile(customPngQrUrl, `qr_${project.slug}.png`)}
+                      className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-pink-600 text-white font-bold text-xs hover:bg-pink-500 shadow-md transition cursor-pointer"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Descargar PNG
                     </button>
                     <button
-                      onClick={() => handleDownloadFile(svgQrUrl, `qr_${project.slug}.svg`)}
-                      className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-800 text-slate-200 font-bold text-xs hover:bg-slate-700 transition"
+                      onClick={() => handleDownloadFile(customSvgQrUrl, `qr_${project.slug}.svg`)}
+                      className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-800 text-slate-200 font-bold text-xs hover:bg-slate-700 transition cursor-pointer"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Descargar SVG
@@ -286,7 +514,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-slate-950/60 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+        <div className="px-6 py-4 bg-slate-950/70 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <a
               href={whatsappShareUrl}
@@ -309,7 +537,7 @@ export const QrAndCardModal: React.FC<QrAndCardModalProps> = ({ project, onClose
 
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 font-semibold text-xs transition"
+            className="px-5 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 font-semibold text-xs transition cursor-pointer"
           >
             Cerrar
           </button>
