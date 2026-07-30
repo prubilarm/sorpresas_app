@@ -18,27 +18,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// Static asset folders
-const uploadsPath = path.join(__dirname, '../uploads');
-const assetsPath = path.join(__dirname, '../../../regalo_qr_producto_v2/assets');
-
-app.use('/uploads', express.static(uploadsPath));
-app.use('/assets', express.static(assetsPath));
-
-// Setup Swagger UI Documentation
-setupSwagger(app);
-
-// Universal Top-Level Middleware: Catch ANY request containing /r/ and 302 redirect to Vercel Frontend
+// Version Header & Universal QR Redirect Middleware
 app.use((req, res, next) => {
+  res.setHeader('X-Backend-Version', '1.0.5-qr-fix');
   const fullUrl = req.originalUrl || req.url || req.path || '';
-  if (fullUrl.includes('/r/')) {
+  if (fullUrl.includes('/r/') || req.path.startsWith('/r/')) {
     const slug = fullUrl.split('/r/')[1]?.split('?')[0];
     const frontendBase = process.env.FRONTEND_URL || 'https://sorpresas-app-web.vercel.app';
     const targetUrl = `${frontendBase.replace(/\/$/, '')}/r/${slug}`;
@@ -47,6 +31,13 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Mount API Routers
 app.use('/api/auth', authRouter);
