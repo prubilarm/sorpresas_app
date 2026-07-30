@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Film, PlayCircle, AlertTriangle, X, Heart, Download } from 'lucide-react';
-import { trackAnalyticsEvent } from '../../services/api';
+import { trackAnalyticsEvent, API_BASE } from '../../services/api';
 import { ThemeConfig } from '@recuerdos-qr/shared';
 
 interface VideoSectionProps {
@@ -99,7 +99,7 @@ export const VideoSection: React.FC<VideoSectionProps> = ({
 
           {videoUrl && (
             <a
-              href={`http://localhost:4000/api/projects/${projectId}/video/download?type=optimized&isPublic=true`}
+              href={`${API_BASE}/projects/${projectId}/video/download?type=optimized&isPublic=true`}
               download
               className="inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-full font-bold text-xs bg-slate-900/90 hover:bg-slate-800 text-pink-300 border border-pink-500/30 shadow-md hover:scale-105 active:scale-95 transition cursor-pointer mt-1"
               title="Descargar este video personalizado"
