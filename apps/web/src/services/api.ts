@@ -59,7 +59,7 @@ export function getQrCodeUrl(
 }
 
 export function getPublicGiftUrl(slug: string): string {
-  const customFrontend = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FRONTEND_URL) || '';
+  const customFrontend = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_FRONTEND_URL) || '';
   const baseUrl = customFrontend || 'https://sorpresas-app-web.vercel.app';
   return `${baseUrl.replace(/\/$/, '')}/r/${slug}`;
 }
