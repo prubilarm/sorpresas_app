@@ -2030,7 +2030,7 @@ export const ProjectEditor: React.FC = () => {
                             <span className="block uppercase text-[8.5px] tracking-widest font-bold" style={{ color: currentTheme.kickerColor }}>
                               {editorCardKicker || 'HECHO ESPECIALMENTE PARA'}
                             </span>
-                            <h4 className={`text-lg font-bold leading-tight truncate ${currentTheme.fontTitle}`} style={{ color: currentTheme.namesColor }}>
+                            <h4 className={`text-lg leading-tight truncate ${currentTheme.fontTitleClass}`} style={{ color: currentTheme.namesColor }}>
                               {editorCardNames || `${project.sender_name || 'Remitente'} & ${project.recipient_name || 'Destinatario'}`}
                             </h4>
                           </div>
