@@ -339,7 +339,7 @@ const checkVideoDuration = (file: File): Promise<number> => {
               : sec
           );
           break;
-        } else if (mediaItem.media_type === 'video' || targetSection === 'video') {
+        } else if (targetSection === 'video') {
           updatedSections = updatedSections.map((sec) =>
             sec.section_type === 'video'
               ? { ...sec, settings_json: { ...sec.settings_json, videoUrl: finalUrl } }
@@ -1242,11 +1242,31 @@ const checkVideoDuration = (file: File): Promise<number> => {
                     <img src={resolveMediaUrl(heroSec.settings_json.cover)} alt="Portada" className="w-full h-full object-cover" />
                   </div>
                 )}
-                <label className="cursor-pointer inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-lg hover:brightness-110 transition">
-                  <Upload className="w-4 h-4" />
-                  {uploading ? 'Subiendo imagen…' : 'Cambiar Imagen de Portada'}
-                  <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'hero')} className="hidden" />
-                </label>
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="cursor-pointer inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-lg hover:brightness-110 transition">
+                    <Upload className="w-4 h-4" />
+                    {uploading ? 'Subiendo imagen…' : 'Cambiar Imagen de Portada'}
+                    <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'hero')} className="hidden" />
+                  </label>
+                  {heroSec.settings_json?.cover && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSections((prev) =>
+                          prev.map((s) =>
+                            s.id === heroSec.id
+                              ? { ...s, settings_json: { ...s.settings_json, cover: '' } }
+                              : s
+                          )
+                        );
+                      }}
+                      className="py-2.5 px-4 rounded-xl bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Quitar Foto de Portada
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="mt-6 pt-6 border-t border-slate-800 space-y-4">
@@ -1771,17 +1791,38 @@ const checkVideoDuration = (file: File): Promise<number> => {
                   </div>
                 )}
 
-                <div className="flex flex-wrap items-center gap-3 pt-2">
-                  <label className="cursor-pointer inline-flex items-center gap-2 py-3 px-6 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-lg">
-                    <Film className="w-5 h-5" />
-                    {uploading ? 'Subiendo video…' : 'Seleccionar o Reemplazar Video'}
-                    <input
-                      type="file"
-                      accept="video/mp4,video/webm,video/quicktime"
-                      onChange={(e) => handleFileUpload(e, 'video')}
-                      className="hidden"
-                    />
-                  </label>
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <label className="cursor-pointer inline-flex items-center gap-2 py-3 px-6 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-bold shadow-lg hover:brightness-110 transition">
+                      <Film className="w-5 h-5" />
+                      {uploading ? 'Subiendo video…' : 'Seleccionar o Reemplazar Video'}
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime"
+                        onChange={(e) => handleFileUpload(e, 'video')}
+                        className="hidden"
+                      />
+                    </label>
+
+                    {videoSec.settings_json?.videoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm('¿Deseas quitar el video principal de esta sección?')) {
+                            setSections((prev) =>
+                              prev.map((s) =>
+                                s.id === videoSec.id
+                                  ? { ...s, settings_json: { ...s.settings_json, videoUrl: '' } }
+                                  : s
+                              )
+                            );
+                          }
+                        }}
+                        className="py-3 px-4 rounded-xl bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Quitar Video Principal
+                      </button>
+                    )}
 
                   {videoSec.settings_json?.videoUrl && (
                     <>
