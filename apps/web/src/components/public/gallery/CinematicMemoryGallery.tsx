@@ -25,7 +25,7 @@ export const CinematicMemoryGallery: React.FC<CinematicMemoryGalleryProps> = ({
   title = 'Nuestros Recuerdos',
   subtitle = 'Desliza hacia los lados para revivir cada momento',
   theme,
-  autoplayMode = 'manual_only',
+  autoplayMode = 'auto_and_manual',
   captureMode = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -217,6 +217,7 @@ export const CinematicMemoryGallery: React.FC<CinematicMemoryGalleryProps> = ({
           isDragging={isDragging}
           isAnimating={isAnimating}
           theme={theme}
+          onNext={next}
         />
       </div>
 

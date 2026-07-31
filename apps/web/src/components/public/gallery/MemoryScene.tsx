@@ -10,6 +10,7 @@ interface MemorySceneProps {
   isDragging: boolean;
   isAnimating: boolean;
   theme?: ThemeConfig;
+  onNext?: () => void;
 }
 
 const isMediaVideo = (item?: MediaItem | null, url?: string) => {
@@ -27,6 +28,7 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
   isDragging,
   isAnimating,
   theme,
+  onNext,
 }) => {
   const isBW = (currentPhoto as any)?.is_bw;
   const currentUrl = resolveMediaUrl(currentPhoto.public_url);
@@ -119,8 +121,8 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
                 src={currentUrl}
                 autoPlay
                 muted
-                loop
                 playsInline
+                onEnded={() => onNext?.()}
                 className={`w-full h-full object-contain drop-shadow-sm transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
               />
             ) : (
