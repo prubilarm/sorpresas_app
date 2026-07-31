@@ -130,13 +130,32 @@ export const StartScreen: React.FC<StartScreenProps> = ({
           {productTitle}
         </h1>
 
-        {/* Sender & Recipient Metadata */}
-        <div className="py-2.5 px-5 rounded-2xl bg-white/5 border border-white/10 max-w-[340px] mx-auto space-y-0.5">
-          <p className="text-sm sm:text-base font-serif italic text-pink-200">
-            De: <span className="font-bold text-white tracking-wide">{sender}</span>
+        {/* Sender & Recipient Metadata (Ultra-Elegant Cormorant Garamond & Great Vibes) */}
+        <div className="py-4 px-6 rounded-2xl bg-gradient-to-br from-white/10 via-pink-950/30 to-amber-950/30 border border-amber-300/30 shadow-inner max-w-[360px] mx-auto space-y-1.5 backdrop-blur-md">
+          <p
+            className="text-lg sm:text-xl font-serif italic tracking-wide text-pink-200 flex items-center justify-center gap-2"
+            style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+          >
+            <span>De:</span>
+            <span
+              className="font-normal text-amber-100 text-3xl sm:text-4xl drop-shadow-md"
+              style={{ fontFamily: "'Great Vibes', cursive", letterSpacing: '0.05em' }}
+            >
+              {sender}
+            </span>
           </p>
-          <p className="text-sm sm:text-base font-serif italic text-pink-200">
-            Para: <span className="font-bold text-white tracking-wide">{recipient}</span>
+          <div className="w-16 h-px bg-amber-300/40 mx-auto my-1" />
+          <p
+            className="text-lg sm:text-xl font-serif italic tracking-wide text-amber-200 flex items-center justify-center gap-2"
+            style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+          >
+            <span>Para:</span>
+            <span
+              className="font-normal text-amber-100 text-3xl sm:text-4xl drop-shadow-md"
+              style={{ fontFamily: "'Great Vibes', cursive", letterSpacing: '0.05em' }}
+            >
+              {recipient}
+            </span>
           </p>
         </div>
 
@@ -148,13 +167,14 @@ export const StartScreen: React.FC<StartScreenProps> = ({
               e.stopPropagation();
               handleClick();
             }}
-            className="w-full py-4 px-7 rounded-full font-bold text-white shadow-2xl hover:brightness-110 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 text-base sm:text-lg cursor-pointer"
+            className="w-full py-4.5 px-8 rounded-full font-serif font-bold text-white shadow-2xl hover:brightness-110 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 text-lg sm:text-xl tracking-wider cursor-pointer border border-amber-300/40"
             style={{
+              fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
               background: `linear-gradient(135deg, ${accentColor}, #f43f5e)`,
-              boxShadow: `0 10px 35px ${theme?.glowColor || 'rgba(236,72,153,0.5)'}`,
+              boxShadow: `0 12px 40px ${theme?.glowColor || 'rgba(236,72,153,0.55)'}`,
             }}
           >
-            <Play className="w-5 h-5 fill-white text-white" />
+            <Play className="w-5 h-5 fill-white text-white animate-pulse" />
             <span>{buttonText || 'Toca para abrir tu detalle'}</span>
           </button>
         </div>
