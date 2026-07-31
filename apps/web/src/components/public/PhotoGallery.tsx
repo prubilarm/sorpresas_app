@@ -1,6 +1,7 @@
 import React from 'react';
 import { MediaItem, ThemeConfig, PhotoFrameVariant } from '@recuerdos-qr/shared';
 import { CinematicMemoryGallery } from './gallery/CinematicMemoryGallery';
+import { resolveMediaUrl } from '../../services/api';
 
 interface PhotoGalleryProps {
   mediaItems: MediaItem[];
@@ -27,13 +28,27 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
   autoplayMode,
   captureMode = false,
 }) => {
+  const normalizePath = (url?: string) => {
+    if (!url) return '';
+    const resolved = resolveMediaUrl(url);
+    try {
+      return new URL(resolved).pathname;
+    } catch (e) {
+      return resolved;
+    }
+  };
+
+  const heroPath = normalizePath(heroCoverUrl);
+  const videoPath = normalizePath(videoUrl);
+
   // Show images and 2-sec mini-videos that are NOT the hero cover or main video
-  const photos = mediaItems.filter(
-    (m) =>
-      (m.media_type === 'image' || m.media_type === 'video') &&
-      m.public_url !== heroCoverUrl &&
-      m.public_url !== videoUrl
-  );
+  const photos = mediaItems.filter((m) => {
+    const path = normalizePath(m.public_url || (m as any).url || m.storage_path);
+    if (!path) return false;
+    if (heroPath && path === heroPath) return false;
+    if (videoPath && path === videoPath) return false;
+    return m.media_type === 'image' || m.media_type === 'video';
+  });
 
   if (!photos.length) return null;
 

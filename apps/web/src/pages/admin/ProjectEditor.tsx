@@ -330,7 +330,6 @@ const checkVideoDuration = (file: File): Promise<number> => {
 
         const finalUrl = resolveMediaUrl(mediaItem.public_url) || fileDataUrl;
         mediaItem.public_url = finalUrl;
-        newMediaList.push(mediaItem);
 
         if (targetSection === 'hero') {
           updatedSections = updatedSections.map((sec) =>
@@ -346,6 +345,8 @@ const checkVideoDuration = (file: File): Promise<number> => {
               : sec
           );
           break;
+        } else {
+          newMediaList.push(mediaItem);
         }
       }
 
@@ -1488,15 +1489,28 @@ const checkVideoDuration = (file: File): Promise<number> => {
 
           {/* Tab 5: Photos */}
           {activeTab === 'photos' && (() => {
-            // URL of the hero cover photo & main video — exclude them from gallery
-            const heroCoverUrl = sections.find((s) => s.section_type === 'hero')?.settings_json?.cover || '';
-            const videoSecUrl = sections.find((s) => s.section_type === 'video')?.settings_json?.videoUrl || '';
-            const galleryPhotos = media.filter(
-              (m) =>
-                (m.media_type === 'image' || m.media_type === 'video') &&
-                m.public_url !== heroCoverUrl &&
-                m.public_url !== videoSecUrl
-            );
+            const normalizePath = (url?: string) => {
+              if (!url) return '';
+              const resolved = resolveMediaUrl(url);
+              try {
+                return new URL(resolved).pathname;
+              } catch (e) {
+                return resolved;
+              }
+            };
+
+            const heroPath = normalizePath(sections.find((s) => s.section_type === 'hero')?.settings_json?.cover);
+            const videoPath = normalizePath(sections.find((s) => s.section_type === 'video')?.settings_json?.videoUrl);
+            const songPath = normalizePath(project.settings_json?.song_photo_url);
+
+            const galleryPhotos = media.filter((m) => {
+              const path = normalizePath(m.public_url || m.url || m.storage_path);
+              if (!path) return false;
+              if (heroPath && path === heroPath) return false;
+              if (videoPath && path === videoPath) return false;
+              if (songPath && path === songPath) return false;
+              return m.media_type === 'image' || m.media_type === 'video';
+            });
             return (
               <div className="space-y-6 bg-slate-900 p-6 rounded-3xl border border-slate-800">
                 <div className="flex items-center justify-between">
