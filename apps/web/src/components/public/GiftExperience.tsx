@@ -379,6 +379,7 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
             <PhotoGallery
               mediaItems={media}
               heroCoverUrl={heroSec?.settings_json?.cover || ''}
+              videoUrl={videoSec?.settings_json?.videoUrl || ''}
               title={resolved.photos.title}
               subtitle={resolved.photos.subtitle}
               frameVariant={resolved.photos.frameVariant}

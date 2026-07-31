@@ -259,6 +259,23 @@ export const ProjectEditor: React.FC = () => {
     }
   };
 
+const checkVideoDuration = (file: File): Promise<number> => {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    const objectUrl = URL.createObjectURL(file);
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(video.duration);
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(0);
+    };
+    video.src = objectUrl;
+  });
+};
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetSection?: 'hero' | 'photos' | 'video') => {
     const files = Array.from(e.target.files || []);
     if (!files.length || !project) return;
@@ -271,6 +288,19 @@ export const ProjectEditor: React.FC = () => {
       let updatedSections = [...sections];
 
       for (const file of files) {
+        // En la sección de fotos solo se permiten minivideos de máximo 2 segundos
+        if (file.type.startsWith('video/')) {
+          if (targetSection === 'photos') {
+            const duration = await checkVideoDuration(file);
+            if (duration > 2.05) {
+              alert(
+                `El video "${file.name}" dura ${duration.toFixed(1)} segundos. En la galería de fotos solo se permiten minivideos de máximo 2 segundos.`
+              );
+              continue;
+            }
+          }
+        }
+
         let fileDataUrl = '';
         if (file.type.startsWith('image/')) {
           try {
@@ -1438,26 +1468,30 @@ export const ProjectEditor: React.FC = () => {
 
           {/* Tab 5: Photos */}
           {activeTab === 'photos' && (() => {
-            // URL of the hero cover photo — exclude it from gallery
+            // URL of the hero cover photo & main video — exclude them from gallery
             const heroCoverUrl = sections.find((s) => s.section_type === 'hero')?.settings_json?.cover || '';
+            const videoSecUrl = sections.find((s) => s.section_type === 'video')?.settings_json?.videoUrl || '';
             const galleryPhotos = media.filter(
-              (m) => m.media_type === 'image' && m.public_url !== heroCoverUrl
+              (m) =>
+                (m.media_type === 'image' || m.media_type === 'video') &&
+                m.public_url !== heroCoverUrl &&
+                m.public_url !== videoSecUrl
             );
             return (
               <div className="space-y-6 bg-slate-900 p-6 rounded-3xl border border-slate-800">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-bold text-white">Galería de Fotografías</h2>
+                    <h2 className="text-xl font-bold text-white">Galería de Fotografías &amp; Minivideos</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Sube una o varias fotos a la vez. La foto de portada no aparece aquí.
+                      Sube fotos o minivideos de máximo 2 segundos (estilo Live Photo). La foto de portada no aparece aquí.
                     </p>
                   </div>
-                  <label className="cursor-pointer py-2.5 px-5 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-lg flex items-center gap-1.5">
+                  <label className="cursor-pointer py-2.5 px-5 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-lg flex items-center gap-1.5 hover:brightness-110 transition">
                     <Upload className="w-4 h-4" />
-                    {uploading ? 'Subiendo…' : 'Subir fotos'}
+                    {uploading ? 'Subiendo…' : 'Subir fotos / minivideos (máx 2s)'}
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/*,video/*"
                       multiple
                       onChange={(e) => handleFileUpload(e, 'photos')}
                       className="hidden"
@@ -1467,7 +1501,7 @@ export const ProjectEditor: React.FC = () => {
 
                 <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2">
                   <label className="block text-xs font-bold text-pink-400 uppercase tracking-wider">
-                    Avance de las fotografías en la historia pública
+                    Avance de las fotografías y minivideos en la historia pública
                   </label>
                   <div className="flex items-center gap-4">
                     <label className="flex items-center gap-2 text-sm text-slate-200 cursor-pointer">
@@ -1513,27 +1547,46 @@ export const ProjectEditor: React.FC = () => {
                 {galleryPhotos.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-14 gap-3 text-slate-500 border-2 border-dashed border-slate-700 rounded-2xl">
                     <Upload className="w-8 h-8" />
-                    <p className="text-sm font-semibold">No hay fotos en la galería todavía</p>
-                    <p className="text-xs">Pulsa «Subir fotos» para agregar recuerdos</p>
+                    <p className="text-sm font-semibold">No hay recuerdos en la galería todavía</p>
+                    <p className="text-xs">Pulsa «Subir fotos / minivideos» para agregar recuerdos (máx 2s)</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
-                      Gestión de Fotografía &amp; Textos Animados ({galleryPhotos.length} fotos)
+                      Gestión de Fotografías / Minivideos &amp; Textos Animados ({galleryPhotos.length} elementos)
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {galleryPhotos.map((item, idx) => (
-                        <div
-                          key={item.id}
-                          className="relative group rounded-2xl overflow-hidden bg-slate-800 border border-slate-700 p-4 space-y-3"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-black flex-shrink-0 border border-slate-700">
-                              <img src={resolveMediaUrl(item.public_url || item.url || item.storage_path || item.media_url)} alt="Foto" className={`w-full h-full object-cover ${item.is_bw ? 'filter grayscale' : ''}`} />
-                              <span className="absolute top-1 left-1 bg-black/70 text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
-                                #{idx + 1}
-                              </span>
-                            </div>
+                      {galleryPhotos.map((item, idx) => {
+                        const targetUrl = resolveMediaUrl(item.public_url || item.url || item.storage_path || item.media_url);
+                        const isVideoItem = item.media_type === 'video' || /\.(mp4|webm|mov|m4v|ogv)$/i.test(targetUrl.split('?')[0]);
+
+                        return (
+                          <div
+                            key={item.id}
+                            className="relative group rounded-2xl overflow-hidden bg-slate-800 border border-slate-700 p-4 space-y-3"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-black flex-shrink-0 border border-slate-700">
+                                {isVideoItem ? (
+                                  <video
+                                    src={targetUrl}
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    className={`w-full h-full object-cover ${item.is_bw ? 'filter grayscale' : ''}`}
+                                  />
+                                ) : (
+                                  <img
+                                    src={targetUrl}
+                                    alt="Foto"
+                                    className={`w-full h-full object-cover ${item.is_bw ? 'filter grayscale' : ''}`}
+                                  />
+                                )}
+                                <span className="absolute top-1 left-1 bg-black/70 text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
+                                  #{idx + 1} {isVideoItem ? '🎥 2s' : ''}
+                                </span>
+                              </div>
                             <div className="flex-1 space-y-1.5">
                               <input
                                 type="text"
@@ -1613,7 +1666,8 @@ export const ProjectEditor: React.FC = () => {
                             </button>
                           </div>
                         </div>
-                      ))}
+                      );
+                    })}
                     </div>
                   </div>
                 )}

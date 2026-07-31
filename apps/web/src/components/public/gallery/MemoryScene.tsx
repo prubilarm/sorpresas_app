@@ -12,6 +12,13 @@ interface MemorySceneProps {
   theme?: ThemeConfig;
 }
 
+const isMediaVideo = (item?: MediaItem | null, url?: string) => {
+  if (!item && !url) return false;
+  if (item?.media_type === 'video') return true;
+  const targetUrl = url || item?.public_url || '';
+  return /\.(mp4|webm|mov|m4v|ogv)$/i.test(targetUrl.split('?')[0]);
+};
+
 export const MemoryScene: React.FC<MemorySceneProps> = ({
   currentPhoto,
   prevPhoto,
@@ -26,27 +33,18 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
   const prevUrl = prevPhoto ? resolveMediaUrl(prevPhoto.public_url) : '';
   const nextUrl = nextPhoto ? resolveMediaUrl(nextPhoto.public_url) : '';
 
-  // Normalised ratio [-1..1] of how far user has dragged relative to a full slide width
-  const slideWidthPx = 320; // reference width for ratio calc (doesn't need to be exact)
-  const dragRatio = Math.max(-1, Math.min(1, dragOffsetX / slideWidthPx));
-
-  // Each slide is expressed as a % of the container width so it works at any size
-  // Current slide: centered (0%) + drag offset
-  // Prev slide: -100% + drag offset (starts off left, comes into view on drag right)
-  // Next slide: +100% + drag offset (starts off right, comes into view on drag left)
-  const transition = isDragging
-    ? 'none'
-    : 'transform 0.42s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.42s ease, box-shadow 0.3s ease';
-
-  const baseCard =
-    'absolute inset-y-0 w-[85%] sm:w-[420px] max-w-full rounded-[28px] overflow-hidden border shadow-2xl select-none';
-
   const currentIsLandscape =
     (currentPhoto.width && currentPhoto.height && currentPhoto.width > currentPhoto.height) || false;
 
+  const dragRatio = Math.max(-1, Math.min(1, dragOffsetX / 300));
+  const transition = isDragging ? 'none' : 'transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 500ms ease';
+
+  const baseCard =
+    'absolute top-0 w-full max-w-[340px] sm:max-w-[420px] h-[400px] sm:h-[440px] rounded-3xl overflow-hidden border p-3 flex flex-col justify-between shadow-2xl transition-transform backdrop-blur-xl';
+
   return (
     <div
-      className="relative w-full max-w-[900px] mx-auto overflow-hidden select-none"
+      className="relative w-full flex items-center justify-center overflow-hidden py-4 select-none"
       style={{ height: '440px', touchAction: 'pan-y' }}
     >
       {/* ── PREVIOUS slide — peeks in from the LEFT on drag-right ── */}
@@ -62,13 +60,17 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
             zIndex: dragOffsetX > 0 ? 15 : 5,
           }}
         >
-          <img
-            src={prevUrl}
-            alt=""
-            aria-hidden="true"
-            className="w-full h-full object-cover"
-            draggable={false}
-          />
+          {isMediaVideo(prevPhoto, prevUrl) ? (
+            <video src={prevUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+          ) : (
+            <img
+              src={prevUrl}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
+          )}
           {/* Dim overlay */}
           <div className="absolute inset-0 bg-black/30 pointer-events-none" />
         </div>
@@ -91,24 +93,39 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
         {/* Blurred landscape background fill */}
         {currentIsLandscape && (
           <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-            <img
-              src={currentUrl}
-              alt=""
-              aria-hidden="true"
-              className="w-full h-full object-cover blur-2xl opacity-40 scale-110"
-            />
+            {isMediaVideo(currentPhoto, currentUrl) ? (
+              <video src={currentUrl} autoPlay loop muted playsInline className="w-full h-full object-cover blur-2xl opacity-40 scale-110" />
+            ) : (
+              <img
+                src={currentUrl}
+                alt=""
+                aria-hidden="true"
+                className="w-full h-full object-cover blur-2xl opacity-40 scale-110"
+              />
+            )}
             <div className="absolute inset-0 bg-black/30" />
           </div>
         )}
 
-        {/* Main photo */}
-        <div className="relative z-10 w-full h-full">
-          <img
-            src={currentUrl}
-            alt={currentPhoto.caption || 'Foto'}
-            className={`w-full h-full ${currentIsLandscape ? 'object-contain' : 'object-cover'} transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
-            draggable={false}
-          />
+        {/* Main photo / video */}
+        <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden">
+          {isMediaVideo(currentPhoto, currentUrl) ? (
+            <video
+              src={currentUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className={`w-full h-full ${currentIsLandscape ? 'object-contain' : 'object-cover'} transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
+            />
+          ) : (
+            <img
+              src={currentUrl}
+              alt={currentPhoto.caption || 'Foto'}
+              className={`w-full h-full ${currentIsLandscape ? 'object-contain' : 'object-cover'} transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
+              draggable={false}
+            />
+          )}
         </div>
 
         {/* Bottom gradient for caption readability */}
@@ -131,13 +148,17 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
             zIndex: dragOffsetX < 0 ? 15 : 5,
           }}
         >
-          <img
-            src={nextUrl}
-            alt=""
-            aria-hidden="true"
-            className="w-full h-full object-cover"
-            draggable={false}
-          />
+          {isMediaVideo(nextPhoto, nextUrl) ? (
+            <video src={nextUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+          ) : (
+            <img
+              src={nextUrl}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
+          )}
           {/* Dim overlay */}
           <div className="absolute inset-0 bg-black/30 pointer-events-none" />
         </div>

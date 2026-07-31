@@ -5,6 +5,7 @@ import { CinematicMemoryGallery } from './gallery/CinematicMemoryGallery';
 interface PhotoGalleryProps {
   mediaItems: MediaItem[];
   heroCoverUrl?: string;
+  videoUrl?: string;
   title?: string;
   subtitle?: string;
   frameVariant?: PhotoFrameVariant;
@@ -17,6 +18,7 @@ interface PhotoGalleryProps {
 export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
   mediaItems,
   heroCoverUrl = '',
+  videoUrl = '',
   title,
   subtitle,
   frameVariant,
@@ -25,9 +27,12 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
   autoplayMode,
   captureMode = false,
 }) => {
-  // Only show images that are NOT the hero cover photo
+  // Show images and 2-sec mini-videos that are NOT the hero cover or main video
   const photos = mediaItems.filter(
-    (m) => m.media_type === 'image' && m.public_url !== heroCoverUrl
+    (m) =>
+      (m.media_type === 'image' || m.media_type === 'video') &&
+      m.public_url !== heroCoverUrl &&
+      m.public_url !== videoUrl
   );
 
   if (!photos.length) return null;

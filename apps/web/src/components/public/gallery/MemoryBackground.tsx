@@ -8,24 +8,29 @@ interface MemoryBackgroundProps {
 }
 
 export const MemoryBackground: React.FC<MemoryBackgroundProps> = ({ currentPhoto, theme }) => {
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
-      {/* Blurred Ambient Image Background */}
-      {currentPhoto && (
-        <div
-          key={currentPhoto.id}
-          className="absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-40 scale-125 filter blur-3xl saturate-150"
-        >
-          <img
-            src={resolveMediaUrl(currentPhoto.public_url)}
-            alt=""
-            aria-hidden="true"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
+  if (!currentPhoto) return null;
+  const url = resolveMediaUrl(currentPhoto.public_url);
+  const isVideo = currentPhoto.media_type === 'video' || /\.(mp4|webm|mov|m4v|ogv)$/i.test(url.split('?')[0]);
 
-      {/* Overlay Vignette Gradient */}
+  return (
+    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      {isVideo ? (
+        <video
+          src={url}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover blur-3xl opacity-40 scale-125 transition-all duration-700"
+        />
+      ) : (
+        <img
+          src={url}
+          alt=""
+          aria-hidden="true"
+          className="w-full h-full object-cover blur-3xl opacity-40 scale-125 transition-all duration-700"
+        />
+      )}
       <div
         className="absolute inset-0 transition-all duration-700"
         style={{

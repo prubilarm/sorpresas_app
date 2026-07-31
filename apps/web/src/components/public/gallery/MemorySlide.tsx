@@ -42,6 +42,8 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
   const rotationDegrees =
     sceneType === 'B' || isPolaroidTheme ? ((index % 3) - 1) * 1.2 : 0;
 
+  const isVideo = photo.media_type === 'video' || /\.(mp4|webm|mov|m4v|ogv)$/i.test(resolvedPhotoUrl.split('?')[0]);
+
   return (
     <div
       className={`relative w-full h-full flex flex-col items-center justify-center transition-all duration-700 ${
@@ -51,12 +53,23 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
       {/* ─── SCENE TYPE C: Landscape Photo with Blurred Background ─── */}
       {sceneType === 'C' && (
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <img
-            src={resolvedPhotoUrl}
-            alt=""
-            aria-hidden="true"
-            className="w-full h-full object-cover blur-2xl opacity-35 scale-125"
-          />
+          {isVideo ? (
+            <video
+              src={resolvedPhotoUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover blur-2xl opacity-35 scale-125"
+            />
+          ) : (
+            <img
+              src={resolvedPhotoUrl}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover blur-2xl opacity-35 scale-125"
+            />
+          )}
           <div
             className="absolute inset-0"
             style={{
@@ -104,13 +117,26 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
 
         {/* Photo Container */}
         <div className="relative flex-1 w-full rounded-2xl overflow-hidden bg-black/40 flex items-center justify-center">
-          <img
-            src={resolvedPhotoUrl}
-            alt={photo.caption || `Fotografía ${index + 1}`}
-            className={`w-full h-full object-contain transition-all duration-700 ${
-              sceneType === 'D' ? 'filter grayscale contrast-105' : ''
-            }`}
-          />
+          {isVideo ? (
+            <video
+              src={resolvedPhotoUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className={`w-full h-full object-contain transition-all duration-700 ${
+                sceneType === 'D' ? 'filter grayscale contrast-105' : ''
+              }`}
+            />
+          ) : (
+            <img
+              src={resolvedPhotoUrl}
+              alt={photo.caption || `Fotografía ${index + 1}`}
+              className={`w-full h-full object-contain transition-all duration-700 ${
+                sceneType === 'D' ? 'filter grayscale contrast-105' : ''
+              }`}
+            />
+          )}
         </div>
 
         {/* Caption */}
