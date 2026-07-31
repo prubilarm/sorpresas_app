@@ -49,73 +49,61 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
     ];
   }
 
-  // Opening Sequence (1.5s total)
+  // Opening Sequence (750ms continuous total)
   const handleOpen = useCallback(() => {
     if (animStage !== 'closed') return;
     setIsOpen(true);
     setAnimStage('unsealing');
     document.body.style.overflow = 'hidden';
 
-    // Step 1: Unseal wax stamp (0 - 300ms)
+    // Step 1: Unseal (0 - 150ms)
     const t1 = setTimeout(() => {
       setAnimStage('opening_flap');
-    }, 300);
+    }, 150);
 
-    // Step 2: Open 3D top flap (300 - 800ms)
+    // Step 2: Open 3D flap (150 - 450ms)
     const t2 = setTimeout(() => {
-      setAnimStage('sliding_letter');
-    }, 800);
-
-    // Step 3: Slide paper out & unfold (800 - 1400ms)
-    const t3 = setTimeout(() => {
       setAnimStage('revealing_text');
-    }, 1400);
+    }, 450);
 
-    // Step 4: Final open state
-    const t4 = setTimeout(() => {
+    // Step 3: Final open state (750ms)
+    const t3 = setTimeout(() => {
       setAnimStage('open');
-    }, 1800);
+    }, 750);
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      clearTimeout(t4);
     };
   }, [animStage]);
 
-  // Reverse Closing Sequence (1.4s total)
+  // Reverse Closing Sequence (750ms continuous total)
   const handleClose = useCallback(() => {
     if (animStage === 'closed' || animStage.startsWith('closing') || animStage === 'fading_text') return;
     setAnimStage('fading_text');
 
-    // Step 1: Fade out text (0 - 350ms)
+    // Step 1: Fade out text (0 - 200ms)
     const t1 = setTimeout(() => {
       setAnimStage('folding_letter');
-    }, 350);
+    }, 200);
 
-    // Step 2: Fold paper back into envelope pocket (350 - 850ms)
+    // Step 2: Fold letter & close flap (200 - 550ms)
     const t2 = setTimeout(() => {
-      setAnimStage('closing_flap');
-    }, 850);
-
-    // Step 3: Close top 3D flap (850 - 1250ms)
-    const t3 = setTimeout(() => {
       setAnimStage('resealing');
-    }, 1250);
+    }, 550);
 
-    // Step 4: Restore wax seal & close (1250 - 1450ms)
-    const t4 = setTimeout(() => {
+    // Step 3: Sealed & closed (750ms)
+    const t3 = setTimeout(() => {
       setAnimStage('closed');
       setIsOpen(false);
       document.body.style.overflow = '';
-    }, 1450);
+    }, 750);
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      clearTimeout(t4);
     };
   }, [animStage]);
 
@@ -280,17 +268,6 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
               boxShadow: '0 45px 130px rgba(0, 0, 0, 0.85), inset 0 0 90px rgba(235, 220, 190, 0.45)',
             }}
           >
-            {/* Floating Close Button Top Right */}
-            <button
-              type="button"
-              onClick={handleClose}
-              className="absolute top-5 right-5 sm:top-7 sm:right-7 py-2.5 px-4 rounded-full bg-slate-900/10 hover:bg-slate-900/20 text-slate-800 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer backdrop-blur-sm border border-slate-900/15 shadow-sm active:scale-95 z-30"
-              title="Cerrar carta (ESC)"
-            >
-              <X className="w-4 h-4 text-slate-800" />
-              <span>Cerrar carta</span>
-            </button>
-
             {/* Vintage Gold Header Watermark */}
             <div className="flex items-center justify-center gap-2 mb-6">
               <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-700/40" />
@@ -328,7 +305,7 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
                       : 'opacity-0 translate-y-8 blur-[2px]'
                   }`}
                   style={{
-                    transitionDelay: `${idx * 180}ms`,
+                    transitionDelay: `${idx * 120}ms`,
                     fontFamily: '"Playfair Display", Georgia, serif',
                   }}
                 >
@@ -343,7 +320,7 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
                 className={`mt-10 pt-6 border-t border-amber-900/15 text-center transition-all duration-700 ease-out ${
                   isTextVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
-                style={{ transitionDelay: `${paragraphs.length * 180 + 150}ms` }}
+                style={{ transitionDelay: `${paragraphs.length * 120 + 80}ms` }}
               >
                 <p className="font-mono text-[9px] uppercase tracking-widest text-amber-800/60 mb-1 font-bold">
                   Con todo mi amor
@@ -356,6 +333,26 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
                 </p>
               </div>
             )}
+
+            {/* ── Integrated Bottom Discrete Close Button (✕) ── */}
+            <div
+              className={`mt-10 pt-4 text-center transition-all duration-500 ease-out ${
+                isTextVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+              style={{ transitionDelay: `${paragraphs.length * 120 + 150}ms` }}
+            >
+              <button
+                type="button"
+                onClick={handleClose}
+                className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-amber-900/5 hover:bg-amber-900/15 text-amber-900/75 hover:text-amber-950 border border-amber-800/20 shadow-sm transition-all duration-300 active:scale-90 cursor-pointer group"
+                title="Guardar y cerrar carta (ESC)"
+              >
+                <X className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90 text-amber-900" />
+              </button>
+              <p className="text-[9px] font-mono tracking-widest text-amber-800/50 uppercase mt-1.5 font-bold">
+                Guardar y cerrar
+              </p>
+            </div>
           </div>
         </div>
       )}
