@@ -1970,8 +1970,34 @@ const checkVideoDuration = (file: File): Promise<number> => {
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white font-bold text-sm shadow-xl hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isExporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Film className="w-5 h-5" />}
-                {isExporting ? 'Procesando exportación…' : '⚡ Generar Video Completo MP4 para Redes'}
+                {isExporting ? 'Procesando exportación de video MP4…' : '⚡ Generar Video Completo MP4 para Redes'}
               </button>
+
+              {/* Instant Direct Download Banner if any export completed */}
+              {exportsList.some((j) => j.status === 'completed') && (
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-emerald-900/60 to-slate-900 border border-emerald-500/50 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="w-8 h-8 text-emerald-400 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-bold text-white">¡Tu video MP4 está listo para descargar!</h4>
+                      <p className="text-xs text-emerald-200/80">Puedes descargarlo y compartirlo directamente en TikTok, Instagram o Reels.</p>
+                    </div>
+                  </div>
+                  {(() => {
+                    const readyJob = exportsList.find((j) => j.status === 'completed');
+                    return (
+                      <a
+                        href={`${API_BASE}/projects/${project.id}/exports/${readyJob.id}/download`}
+                        download
+                        className="w-full sm:w-auto py-3 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg flex items-center justify-center gap-2 transition cursor-pointer flex-shrink-0"
+                      >
+                        <Download className="w-4 h-4" />
+                        Descargar Video MP4
+                      </a>
+                    );
+                  })()}
+                </div>
+              )}
 
               {/* Exports History Table */}
               <div className="space-y-3 pt-4 border-t border-slate-800">
@@ -2003,13 +2029,13 @@ const checkVideoDuration = (file: File): Promise<number> => {
                         </div>
 
                         <div className="flex items-center gap-2 flex-wrap">
-                          {job.status === 'completed' && job.output_url && (
+                          {job.status === 'completed' ? (
                             <>
                               <a
-                                href={job.output_url.startsWith('http') ? job.output_url : `${API_BASE}${job.output_url}`}
+                                href={job.output_url?.startsWith('http') ? job.output_url : `${API_BASE}${job.output_url}`}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="py-2 px-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs shadow flex items-center gap-1.5 transition cursor-pointer"
+                                className="py-2 px-3.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs shadow flex items-center gap-1.5 transition cursor-pointer"
                               >
                                 <Play className="w-3.5 h-3.5 fill-white text-white" />
                                 Ver video
@@ -2017,22 +2043,21 @@ const checkVideoDuration = (file: File): Promise<number> => {
                               <a
                                 href={`${API_BASE}/projects/${project.id}/exports/${job.id}/download`}
                                 download
-                                className="py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition cursor-pointer"
+                                className="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition cursor-pointer"
                               >
                                 <Download className="w-3.5 h-3.5" />
                                 Descargar MP4
                               </a>
                             </>
-                          )}
-                          {job.status === 'failed' && (
-                            <button
-                              type="button"
-                              onClick={handleStartExport}
-                              className="py-2 px-3 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition cursor-pointer"
+                          ) : (
+                            <a
+                              href={`${API_BASE}/projects/${project.id}/exports/${job.id}/download`}
+                              download
+                              className="py-2 px-3.5 rounded-xl bg-pink-600/30 hover:bg-pink-600 text-pink-200 hover:text-white font-bold text-xs shadow border border-pink-500/40 flex items-center gap-1.5 transition cursor-pointer"
                             >
-                              <Film className="w-3.5 h-3.5" />
-                              Reintentar
-                            </button>
+                              <Download className="w-3.5 h-3.5" />
+                              Descargar Video
+                            </a>
                           )}
                           <button
                             type="button"
