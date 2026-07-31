@@ -319,3 +319,23 @@ body {
 .animate-ribbon-slide {
   animation: ribbonSlideDown 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ─── Apple Memories Dolly In & Paper Dissolve Animations ─── */
+@keyframes dollyZoomThrough {
+  0% { transform: scale(1) translateZ(0); opacity: 1; filter: blur(0px); }
+  60% { transform: scale(2.8) translateZ(300px); opacity: 0.95; filter: blur(2px); }
+  100% { transform: scale(9.5) translateZ(900px); opacity: 0; filter: blur(16px); }
+}
+
+@keyframes appleDustGlow {
+  0%, 100% { opacity: 0.3; transform: translateY(0) scale(1); }
+  50% { opacity: 0.85; transform: translateY(-15px) scale(1.15); }
+}
+
+.animate-dolly-zoom {
+  animation: dollyZoomThrough 2.0s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-apple-dust {
+  animation: appleDustGlow 3.5s ease-in-out infinite;
+}
