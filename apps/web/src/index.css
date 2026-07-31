@@ -289,6 +289,33 @@ body {
   animation: washiTapePop 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
 }
 
-.animate-float-subtle {
-  animation: floatSubtle 4s ease-in-out infinite;
+/* ─── 3D Gift Box Unboxing Animations ─── */
+@keyframes boxLidOpen {
+  0% { transform: rotateX(0deg) translateY(0); }
+  100% { transform: rotateX(-115deg) translateY(-90px) translateZ(40px); opacity: 0.85; }
+}
+
+@keyframes ribbonSlideDown {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(120px) scale(1.15) rotate(12deg); opacity: 0; }
+}
+
+@keyframes vibrateSubtle {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-3px, 2px) rotate(-1deg); }
+  40% { transform: translate(3px, -2px) rotate(1deg); }
+  60% { transform: translate(-2px, -1px) rotate(-0.5deg); }
+  80% { transform: translate(2px, 1px) rotate(0.5deg); }
+}
+
+.animate-vibrate {
+  animation: vibrateSubtle 0.4s ease-in-out infinite;
+}
+
+.animate-lid-open {
+  animation: boxLidOpen 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-ribbon-slide {
+  animation: ribbonSlideDown 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
