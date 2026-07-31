@@ -288,19 +288,6 @@ const checkVideoDuration = (file: File): Promise<number> => {
       let updatedSections = [...sections];
 
       for (const file of files) {
-        // En la sección de fotos solo se permiten minivideos de máximo 3 segundos
-        if (file.type.startsWith('video/')) {
-          if (targetSection === 'photos') {
-            const duration = await checkVideoDuration(file);
-            if (duration > 3.05) {
-              alert(
-                `El video "${file.name}" dura ${duration.toFixed(1)} segundos. En la galería de fotos solo se permiten minivideos de máximo 3 segundos.`
-              );
-              continue;
-            }
-          }
-        }
-
         let fileDataUrl = '';
         if (file.type.startsWith('image/')) {
           try {
@@ -1515,14 +1502,14 @@ const checkVideoDuration = (file: File): Promise<number> => {
               <div className="space-y-6 bg-slate-900 p-6 rounded-3xl border border-slate-800">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-bold text-white">Galería de Fotografías &amp; Minivideos</h2>
+                    <h2 className="text-xl font-bold text-white">Galería de Fotografías &amp; Videos</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Sube fotos o minivideos de máximo 3 segundos (estilo Live Photo). La foto de portada no aparece aquí.
+                      Sube fotos o videos (cualquier duración). La foto de portada no aparece aquí.
                     </p>
                   </div>
                   <label className="cursor-pointer py-2.5 px-5 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-lg flex items-center gap-1.5 hover:brightness-110 transition">
                     <Upload className="w-4 h-4" />
-                    {uploading ? 'Subiendo…' : 'Subir fotos / minivideos (máx 3s)'}
+                    {uploading ? 'Subiendo…' : 'Subir fotos / videos'}
                     <input
                       type="file"
                       accept="image/*,video/*"
