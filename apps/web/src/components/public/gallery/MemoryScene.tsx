@@ -108,14 +108,14 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
         )}
 
         {/* Main photo / video */}
-        <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden">
+        <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden bg-black flex items-center justify-center">
           {isMediaVideo(currentPhoto, currentUrl) ? (
             <video
               src={currentUrl}
               autoPlay
               muted
               playsInline
-              className={`w-full h-full ${currentIsLandscape ? 'object-contain' : 'object-cover'} transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
+              className={`w-full h-full object-contain transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
             />
           ) : (
             <img

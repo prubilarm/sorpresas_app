@@ -48,7 +48,7 @@ export const CinematicMemoryGallery: React.FC<CinematicMemoryGalleryProps> = ({
 
   const { isPaused, pauseTemporarily } = useAutoplay({
     enabled: autoplayMode === 'auto_and_manual',
-    intervalMs: 4500,
+    intervalMs: 5500,
     totalPhotos,
     currentIndex,
     onNext: next,

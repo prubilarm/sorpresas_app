@@ -59,15 +59,15 @@ export const MemoryAnimatedText: React.FC<MemoryAnimatedTextProps> = ({ photo, t
         {/* Title Words */}
         {titleWords.length > 0 && (
           <h3
-            className="text-xl sm:text-3xl font-serif font-bold leading-snug tracking-wide flex flex-wrap justify-center gap-x-1.5 gap-y-1 mb-2"
+            className="text-lg sm:text-2xl font-serif font-bold leading-snug tracking-wide flex flex-wrap justify-center gap-x-1.5 gap-y-1 mb-2 break-words"
             style={{ color: theme?.titleColor || '#ffffff', fontFamily: theme?.fontTitle || 'Georgia, serif' }}
           >
             {titleWords.map((word, i) => (
               <span
                 key={i}
-                className="inline-block transition-all duration-500 transform animate-fade-in-up"
+                className="inline-block transition-all duration-300 transform animate-fade-in-up"
                 style={{
-                  animationDelay: `${i * 45}ms`,
+                  animationDelay: `${i * 25}ms`,
                 }}
               >
                 {word}
@@ -78,13 +78,13 @@ export const MemoryAnimatedText: React.FC<MemoryAnimatedTextProps> = ({ photo, t
 
         {/* Subtitle / Description Words */}
         {subtitleWords.length > 0 && (
-          <p className="text-sm sm:text-base font-serif italic opacity-95 leading-relaxed flex flex-wrap justify-center gap-x-1 gap-y-0.5 max-w-[500px] mx-auto">
+          <p className="text-xs sm:text-sm font-serif italic opacity-95 leading-relaxed flex flex-wrap justify-center gap-x-1 gap-y-0.5 max-w-[520px] mx-auto break-words">
             {subtitleWords.map((word, i) => (
               <span
                 key={i}
-                className="inline-block transition-all duration-500 transform animate-fade-in-up"
+                className="inline-block transition-all duration-300 transform animate-fade-in-up"
                 style={{
-                  animationDelay: `${(titleWords.length + i) * 35}ms`,
+                  animationDelay: `${(titleWords.length + i) * 20}ms`,
                 }}
               >
                 {word}
