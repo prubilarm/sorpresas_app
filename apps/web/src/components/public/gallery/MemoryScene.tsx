@@ -121,8 +121,13 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
                 src={currentUrl}
                 autoPlay
                 muted
+                loop
                 playsInline
-                onEnded={() => onNext?.()}
+                onEnded={(e) => {
+                  e.currentTarget.currentTime = 0;
+                  e.currentTarget.play().catch(() => {});
+                  onNext?.();
+                }}
                 className={`w-full h-full object-contain drop-shadow-sm transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
               />
             ) : (

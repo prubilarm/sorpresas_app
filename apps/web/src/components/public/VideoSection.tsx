@@ -155,10 +155,14 @@ export const VideoSection: React.FC<VideoSectionProps> = ({
                 playsInline
                 preload="auto"
                 onPlay={handleVideoPlay}
-                onEnded={() => {
-                  if (videoRef.current) {
-                    videoRef.current.currentTime = 0;
-                    videoRef.current.play().catch(() => {});
+                onEnded={(e) => {
+                  e.currentTarget.currentTime = 0;
+                  e.currentTarget.play().catch(() => {});
+                }}
+                onPause={(e) => {
+                  if (e.currentTarget.duration && e.currentTarget.currentTime >= e.currentTarget.duration - 0.3) {
+                    e.currentTarget.currentTime = 0;
+                    e.currentTarget.play().catch(() => {});
                   }
                 }}
                 className="w-full h-full max-h-[78vh] object-contain bg-black rounded-3xl"
