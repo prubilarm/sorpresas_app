@@ -265,19 +265,16 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
               </div>
             )}
 
-            {/* ── Integrated Bottom Discrete Close Button ✕ (THE ONLY CLOSE BUTTON) ── */}
-            <div className="mt-10 pt-4 text-center border-t border-amber-900/10">
+            {/* ── Discrete Bottom Close Button ✕ (ONLY THE X BUTTON) ── */}
+            <div className="mt-8 text-center">
               <button
                 type="button"
                 onClick={handleClose}
-                className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-900/10 hover:bg-amber-900/20 text-amber-950 border border-amber-800/25 shadow-md transition-all duration-300 active:scale-90 cursor-pointer group"
-                title="Cerrar carta (ESC)"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-amber-900/10 hover:bg-amber-900/20 text-amber-950 border border-amber-800/25 shadow-sm transition-all duration-300 active:scale-90 cursor-pointer group"
+                aria-label="Cerrar carta"
               >
-                <X className="w-6 h-6 transition-transform duration-300 group-hover:rotate-90 text-amber-950" />
+                <X className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90 text-amber-950" />
               </button>
-              <p className="text-[10px] font-mono tracking-widest text-amber-900/60 uppercase mt-2 font-bold">
-                Guardar y cerrar
-              </p>
             </div>
           </div>
         </div>
