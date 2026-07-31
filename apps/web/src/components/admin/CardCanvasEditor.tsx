@@ -222,7 +222,7 @@ export const CardCanvasEditor: React.FC<CardCanvasEditorProps> = ({
                   fontSize: `${(currentConfig.names.fontSize || 16) * 1.3}px`,
                 }}
               >
-                {namesText || 'Hans & Tamara'}
+                {namesText || 'Camila & Diego'}
               </h4>
             </div>
 

@@ -107,22 +107,6 @@ export const FinalSection: React.FC<FinalSectionProps> = ({
             </span>
           ))}
         </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            const el = document.getElementById('video');
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }}
-          className={`reveal reveal-delay-5 ${visible ? 'is-visible' : ''} inline-flex items-center gap-2 mt-4 py-3 px-7 rounded-full text-sm font-bold transition shadow-xl hover:brightness-110 active:scale-95`}
-          style={{
-            background: `linear-gradient(135deg, ${accentColor}, #f43f5e)`,
-            color: '#ffffff',
-            boxShadow: `0 8px 28px ${glowColor}`,
-          }}
-        >
-          🎬 Ver el video especial
-        </button>
       </div>
     </section>
   );
