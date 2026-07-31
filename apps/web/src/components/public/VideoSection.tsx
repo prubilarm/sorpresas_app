@@ -45,6 +45,7 @@ export const VideoSection: React.FC<VideoSectionProps> = ({
       videoRef.current.pause();
     }
     setIsImmersive(false);
+    setIsPlayerVisible(false);
     onVideoPlayStateChange?.(false);
   };
 
