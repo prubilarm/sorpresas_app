@@ -24,9 +24,7 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
 }) => {
   const [ref, visible] = useInView(0.15);
   const [isOpen, setIsOpen] = useState(false);
-  
-  // Animation Machine: 'closed' | 'unsealing' | 'opening_flap' | 'sliding_letter' | 'revealing_text' | 'open' | 'fading_text' | 'folding_letter' | 'closing_flap' | 'resealing' | 'closing'
-  const [animStage, setAnimStage] = useState<string>('closed');
+  const [isClosing, setIsClosing] = useState(false);
 
   let paragraphs: string[] = [];
   try {
@@ -49,65 +47,27 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
     ];
   }
 
-  // Opening Sequence (750ms continuous total)
+  // Fast & Fluid 300ms Opening
   const handleOpen = useCallback(() => {
-    if (animStage !== 'closed') return;
+    if (isOpen) return;
+    setIsClosing(false);
     setIsOpen(true);
-    setAnimStage('unsealing');
     document.body.style.overflow = 'hidden';
+  }, [isOpen]);
 
-    // Step 1: Unseal (0 - 150ms)
-    const t1 = setTimeout(() => {
-      setAnimStage('opening_flap');
-    }, 150);
-
-    // Step 2: Open 3D flap (150 - 450ms)
-    const t2 = setTimeout(() => {
-      setAnimStage('revealing_text');
-    }, 450);
-
-    // Step 3: Final open state (750ms)
-    const t3 = setTimeout(() => {
-      setAnimStage('open');
-    }, 750);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, [animStage]);
-
-  // Reverse Closing Sequence (750ms continuous total)
+  // Fast & Fluid 300ms Closing
   const handleClose = useCallback(() => {
-    if (animStage === 'closed' || animStage.startsWith('closing') || animStage === 'fading_text') return;
-    setAnimStage('fading_text');
+    if (!isOpen || isClosing) return;
+    setIsClosing(true);
 
-    // Step 1: Fade out text (0 - 200ms)
-    const t1 = setTimeout(() => {
-      setAnimStage('folding_letter');
-    }, 200);
-
-    // Step 2: Fold letter & close flap (200 - 550ms)
-    const t2 = setTimeout(() => {
-      setAnimStage('resealing');
-    }, 550);
-
-    // Step 3: Sealed & closed (750ms)
-    const t3 = setTimeout(() => {
-      setAnimStage('closed');
+    setTimeout(() => {
       setIsOpen(false);
+      setIsClosing(false);
       document.body.style.overflow = '';
-    }, 750);
+    }, 280);
+  }, [isOpen, isClosing]);
 
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, [animStage]);
-
-  // ESC key handler
+  // ESC key listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -125,29 +85,13 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
     };
   }, []);
 
-  const isFlapOpen =
-    animStage === 'opening_flap' ||
-    animStage === 'sliding_letter' ||
-    animStage === 'revealing_text' ||
-    animStage === 'open' ||
-    animStage === 'fading_text' ||
-    animStage === 'folding_letter';
-
-  const isLetterUnfolded =
-    animStage === 'sliding_letter' ||
-    animStage === 'revealing_text' ||
-    animStage === 'open' ||
-    animStage === 'fading_text';
-
-  const isTextVisible = animStage === 'revealing_text' || animStage === 'open';
-
   return (
     <section
       id="carta"
       ref={ref as React.RefObject<HTMLElement>}
       className="w-full max-w-[780px] mx-auto py-14 px-4 text-center select-none"
     >
-      {/* Section Header with Refined Hierarchy */}
+      {/* Section Header */}
       <div className="mb-10 space-y-2">
         {kicker && (
           <span
@@ -171,9 +115,9 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
       {/* ── 1. CLOSED PHYSICAL ENVELOPE CARD ── */}
       <div
         onClick={handleOpen}
-        className={`reveal-scale ${visible ? 'is-visible' : ''} group relative w-full max-w-[540px] h-[320px] sm:h-[350px] mx-auto rounded-[36px] p-6 sm:p-8 text-center cursor-pointer overflow-hidden transition-all duration-700 hover:scale-[1.03] active:scale-[0.98] shadow-[0_25px_80px_rgba(0,0,0,0.65)] border`}
+        className={`reveal-scale ${visible ? 'is-visible' : ''} group relative w-full max-w-[540px] h-[320px] sm:h-[350px] mx-auto rounded-[36px] p-6 sm:p-8 text-center cursor-pointer overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] shadow-[0_25px_80px_rgba(0,0,0,0.65)] border`}
         style={{
-          background: 'linear-gradient(135deg, #f7f2e8 0%, #ebe2d3 100%)', // Luxury Parchment Envelope Paper
+          background: 'linear-gradient(135deg, #f7f2e8 0%, #ebe2d3 100%)', // Parchment Envelope Paper
           borderColor: 'rgba(212, 175, 55, 0.45)', // Fine Gold Accent Border
           boxShadow: `0 30px 90px rgba(0,0,0,0.65), 0 0 50px ${theme?.glowColor || 'rgba(236,72,153,0.18)'}`,
         }}
@@ -183,7 +127,7 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
         
         {/* Envelope Top Triangular Flap Simulation */}
         <div
-          className="absolute inset-x-0 top-0 h-36 origin-top transition-transform duration-700 ease-in-out pointer-events-none"
+          className="absolute inset-x-0 top-0 h-36 origin-top transition-transform duration-300 ease-out pointer-events-none"
           style={{
             background: 'linear-gradient(180deg, #ede5d5 0%, #e2d7c3 100%)',
             clipPath: 'polygon(0 0, 50% 85%, 100% 0)',
@@ -205,10 +149,10 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
         <div className="relative z-20 h-full flex flex-col items-center justify-center space-y-4 pt-4">
           <div className="relative">
             {/* Soft Glowing Aura */}
-            <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 opacity-50 blur-lg group-hover:opacity-85 transition duration-500 animate-pulse" />
+            <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 opacity-50 blur-lg group-hover:opacity-85 transition duration-300 animate-pulse" />
 
             {/* Hand-Pressed Wax Stamp Badge */}
-            <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-br from-rose-700 via-pink-600 to-amber-800 flex items-center justify-center text-white shadow-[0_15px_35px_rgba(190,18,60,0.5)] border-2 border-amber-300/50 transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
+            <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-br from-rose-700 via-pink-600 to-amber-800 flex items-center justify-center text-white shadow-[0_15px_35px_rgba(190,18,60,0.5)] border-2 border-amber-300/50 transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
               <Heart className="w-10 h-10 fill-white/90 text-amber-200 drop-shadow-md animate-bounce" />
             </div>
           </div>
@@ -224,16 +168,15 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
         </div>
       </div>
 
-      {/* ── 2. EXPANDABLE 3D CINEMATIC UNFOLDED LETTER MODAL ── */}
+      {/* ── 2. EXPANDABLE LUXURY 3D UNFOLDED LETTER MODAL ── */}
       {isOpen && (
         <div
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto transition-all duration-700 select-none ${
-            animStage === 'closed' || animStage === 'resealing'
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto transition-all duration-300 ease-out select-none ${
+            isClosing
               ? 'opacity-0 backdrop-blur-none bg-black/0 pointer-events-none'
               : 'opacity-100 backdrop-blur-2xl bg-black/85'
           }`}
           onClick={handleClose}
-          style={{ perspective: '1400px' }}
         >
           {/* Floating Romantic Background Hearts in Dark Margins */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 opacity-40">
@@ -254,16 +197,16 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
             ))}
           </div>
 
-          {/* 3D Envelope Container */}
+          {/* 3D Envelope Container Sheet (ABSOLUTELY NO TOP BUTTONS) */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`relative w-full max-w-[660px] my-auto rounded-[36px] p-8 sm:p-14 text-slate-900 shadow-[0_40px_120px_rgba(0,0,0,0.85),0_0_80px_rgba(251,191,36,0.2)] border transition-all duration-700 ease-out transform select-text ${
-              isLetterUnfolded
-                ? 'scale-100 rotate-x-0 opacity-100 translate-y-0'
-                : 'scale-90 rotate-x-12 opacity-0 translate-y-12'
+            className={`relative w-full max-w-[660px] my-auto rounded-[36px] p-8 sm:p-14 text-slate-900 shadow-[0_40px_120px_rgba(0,0,0,0.85),0_0_80px_rgba(251,191,36,0.2)] border transition-all duration-300 ease-out transform select-text ${
+              isClosing
+                ? 'scale-95 opacity-0 translate-y-6'
+                : 'scale-100 opacity-100 translate-y-0'
             }`}
             style={{
-              background: 'linear-gradient(145deg, #fdfdf9 0%, #f7f3e8 100%)', // Fine Warm Ivory Linen Paper Texture
+              background: 'linear-gradient(145deg, #fdfdf9 0%, #f7f3e8 100%)', // Fine Warm Ivory Paper
               borderColor: 'rgba(212, 175, 55, 0.45)', // Gold Accent Border
               boxShadow: '0 45px 130px rgba(0, 0, 0, 0.85), inset 0 0 90px rgba(235, 220, 190, 0.45)',
             }}
@@ -277,12 +220,10 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
               <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-700/40" />
             </div>
 
-            {/* Subtitle / Title inside Letter (e.g. "Te amo / Para ti, mi amor") */}
+            {/* Subtitle / Title inside Letter */}
             {title && (
               <h3
-                className={`text-2xl sm:text-4xl font-serif text-center mb-6 font-bold text-amber-950 transition-all duration-700 ease-out ${
-                  isTextVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-                }`}
+                className="text-2xl sm:text-4xl font-serif text-center mb-6 font-bold text-amber-950 transition-all duration-300"
                 style={{ fontFamily: theme?.fontTitle || '"Playfair Display", Georgia, serif' }}
               >
                 {title}
@@ -294,18 +235,13 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
               “
             </div>
 
-            {/* Paragraphs with Staggered Cascading Reveal */}
+            {/* Paragraphs */}
             <div className="space-y-6 text-center max-w-[540px] mx-auto">
               {paragraphs.map((p, idx) => (
                 <p
                   key={idx}
-                  className={`transition-all duration-700 ease-out font-serif italic text-base sm:text-xl leading-relaxed text-slate-800 ${
-                    isTextVisible
-                      ? 'opacity-100 translate-y-0 filter-none'
-                      : 'opacity-0 translate-y-8 blur-[2px]'
-                  }`}
+                  className="font-serif italic text-base sm:text-xl leading-relaxed text-slate-800 transition-all duration-300"
                   style={{
-                    transitionDelay: `${idx * 120}ms`,
                     fontFamily: '"Playfair Display", Georgia, serif',
                   }}
                 >
@@ -316,12 +252,7 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
 
             {/* Letter Signature */}
             {signature && (
-              <div
-                className={`mt-10 pt-6 border-t border-amber-900/15 text-center transition-all duration-700 ease-out ${
-                  isTextVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-                style={{ transitionDelay: `${paragraphs.length * 120 + 80}ms` }}
-              >
+              <div className="mt-10 pt-6 border-t border-amber-900/15 text-center transition-all duration-300">
                 <p className="font-mono text-[9px] uppercase tracking-widest text-amber-800/60 mb-1 font-bold">
                   Con todo mi amor
                 </p>
@@ -334,22 +265,17 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
               </div>
             )}
 
-            {/* ── Integrated Bottom Discrete Close Button (✕) ── */}
-            <div
-              className={`mt-10 pt-4 text-center transition-all duration-500 ease-out ${
-                isTextVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
-              style={{ transitionDelay: `${paragraphs.length * 120 + 150}ms` }}
-            >
+            {/* ── Integrated Bottom Discrete Close Button ✕ (THE ONLY CLOSE BUTTON) ── */}
+            <div className="mt-10 pt-4 text-center border-t border-amber-900/10">
               <button
                 type="button"
                 onClick={handleClose}
-                className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-amber-900/5 hover:bg-amber-900/15 text-amber-900/75 hover:text-amber-950 border border-amber-800/20 shadow-sm transition-all duration-300 active:scale-90 cursor-pointer group"
-                title="Guardar y cerrar carta (ESC)"
+                className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-900/10 hover:bg-amber-900/20 text-amber-950 border border-amber-800/25 shadow-md transition-all duration-300 active:scale-90 cursor-pointer group"
+                title="Cerrar carta (ESC)"
               >
-                <X className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90 text-amber-900" />
+                <X className="w-6 h-6 transition-transform duration-300 group-hover:rotate-90 text-amber-950" />
               </button>
-              <p className="text-[9px] font-mono tracking-widest text-amber-800/50 uppercase mt-1.5 font-bold">
+              <p className="text-[10px] font-mono tracking-widest text-amber-900/60 uppercase mt-2 font-bold">
                 Guardar y cerrar
               </p>
             </div>
