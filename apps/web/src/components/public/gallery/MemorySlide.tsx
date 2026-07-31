@@ -115,14 +115,14 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
         />
 
         {/* Photo Container */}
-        <div className="relative flex-1 w-full rounded-2xl overflow-hidden bg-black/40 flex items-center justify-center">
+        <div className="relative flex-1 w-full rounded-2xl overflow-hidden flex items-center justify-center">
           {isVideo ? (
             <video
               src={resolvedPhotoUrl}
               autoPlay
               muted
               playsInline
-              className={`w-full h-full object-contain transition-all duration-700 ${
+              className={`w-full h-full object-cover transition-all duration-700 ${
                 sceneType === 'D' ? 'filter grayscale contrast-105' : ''
               }`}
             />
@@ -130,7 +130,7 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
             <img
               src={resolvedPhotoUrl}
               alt={photo.caption || `Fotografía ${index + 1}`}
-              className={`w-full h-full object-contain transition-all duration-700 ${
+              className={`w-full h-full object-cover transition-all duration-700 ${
                 sceneType === 'D' ? 'filter grayscale contrast-105' : ''
               }`}
             />

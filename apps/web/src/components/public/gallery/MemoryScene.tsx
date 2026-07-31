@@ -83,54 +83,58 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
           transform: `translateX(calc(-50% + ${dragOffsetX}px)) scale(${1 - Math.abs(dragRatio) * 0.05})`,
           opacity: 1 - Math.abs(dragRatio) * 0.25,
           transition,
-          borderColor: theme?.cardBorder || 'rgba(255,255,255,0.18)',
+          borderColor: theme?.cardBorder || 'rgba(255,255,255,0.22)',
           background: theme?.cardBg || 'rgba(12,5,20,0.92)',
           boxShadow: theme?.cardShadow || '0 32px 80px rgba(0,0,0,0.75)',
           zIndex: 20,
           cursor: isDragging ? 'grabbing' : 'grab',
         }}
       >
-        {/* Blurred landscape background fill */}
-        {currentIsLandscape && (
-          <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-            {isMediaVideo(currentPhoto, currentUrl) ? (
-              <video src={currentUrl} autoPlay muted playsInline className="w-full h-full object-cover blur-2xl opacity-40 scale-110" />
-            ) : (
-              <img
-                src={currentUrl}
-                alt=""
-                aria-hidden="true"
-                className="w-full h-full object-cover blur-2xl opacity-40 scale-110"
-              />
-            )}
-            <div className="absolute inset-0 bg-black/30" />
-          </div>
-        )}
-
-        {/* Main photo / video */}
-        <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden bg-black flex items-center justify-center">
+        {/* Ambient blurred background glow layer — fills all space with video colors */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
           {isMediaVideo(currentPhoto, currentUrl) ? (
             <video
               src={currentUrl}
               autoPlay
               muted
               playsInline
-              className={`w-full h-full object-contain transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
+              className="w-full h-full object-cover blur-2xl opacity-60 scale-125 saturate-150 brightness-110"
+            />
+          ) : (
+            <img
+              src={currentUrl}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover blur-2xl opacity-60 scale-125 saturate-150 brightness-110"
+            />
+          )}
+          <div className="absolute inset-0 bg-black/20" />
+        </div>
+
+        {/* Main photo / video — Edge-to-edge full cover without black bars */}
+        <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden flex items-center justify-center shadow-inner">
+          {isMediaVideo(currentPhoto, currentUrl) ? (
+            <video
+              src={currentUrl}
+              autoPlay
+              muted
+              playsInline
+              className={`w-full h-full object-cover transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
             />
           ) : (
             <img
               src={currentUrl}
               alt={currentPhoto.caption || 'Foto'}
-              className={`w-full h-full ${currentIsLandscape ? 'object-contain' : 'object-cover'} transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
+              className={`w-full h-full object-cover transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
               draggable={false}
             />
           )}
         </div>
 
-        {/* Bottom gradient for caption readability */}
+        {/* Subtle cinematic gradient overlay at bottom for high legibility of text */}
         <div
-          className="absolute inset-x-0 bottom-0 h-24 pointer-events-none z-20"
-          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%)' }}
+          className="absolute inset-x-0 bottom-0 h-32 pointer-events-none z-20 rounded-b-2xl"
+          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 45%, transparent 100%)' }}
         />
       </div>
 
