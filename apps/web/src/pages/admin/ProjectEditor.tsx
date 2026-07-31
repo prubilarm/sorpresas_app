@@ -137,7 +137,7 @@ export const ProjectEditor: React.FC = () => {
       .catch((err) => alert('Error al cargar proyecto: ' + err.message));
 
     reloadExports();
-    const interval = setInterval(reloadExports, 4000);
+    const interval = setInterval(reloadExports, 1200);
     return () => clearInterval(interval);
   }, [id]);
 

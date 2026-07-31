@@ -59,23 +59,33 @@ export async function captureGiftExperience(options: {
 
   onProgress(5, 'Iniciando navegador...');
 
-  // ── Launch Playwright Chromium ───────────────────────────────────────────
+  // ── Launch Playwright Chromium (with 4s max timeout) ──────────────────────
   const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined;
 
-  const browser: Browser = await chromium.launch({
-    headless: true,
-    executablePath,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--disable-gpu',
-      '--disable-web-security',
-      '--allow-running-insecure-content',
-      `--window-size=${res.w},${res.h}`,
-    ],
-  });
+  const launchBrowser = async (): Promise<Browser> => {
+    const launchPromise = chromium.launch({
+      headless: true,
+      executablePath,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+        '--disable-web-security',
+        '--allow-running-insecure-content',
+        `--window-size=${res.w},${res.h}`,
+      ],
+    });
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Chromium launch timeout (4s exceeded)')), 4000);
+    });
+
+    return Promise.race([launchPromise, timeoutPromise]);
+  };
+
+  const browser: Browser = await launchBrowser();
 
   const page: Page = await browser.newPage({
     viewport: { width: res.w, height: res.h },
