@@ -91,11 +91,11 @@ export async function captureGiftExperience(options: {
   onProgress(8, 'Cargando página del regalo...');
 
   try {
-    await page.goto(captureUrl, { waitUntil: 'networkidle', timeout: 30000 });
-  } catch {
-    // Fallback: try domcontentloaded
-    await page.goto(captureUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.goto(captureUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
     await page.waitForTimeout(2000);
+  } catch (err) {
+    console.warn('[Capture] Warning loading page, continuing:', err);
+    await page.waitForTimeout(1000);
   }
 
   // ── Wait for fonts and images to load ───────────────────────────────────

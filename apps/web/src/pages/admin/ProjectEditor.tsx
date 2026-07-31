@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchProjectById, updateProject, uploadMediaFile, deleteMediaFile, createProjectExport, fetchProjectExports, deleteProjectExport, resolveMediaUrl, getPrintableCardUrl, getQrCodeUrl, getPublicGiftUrl, API_BASE } from '../../services/api';
-import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2, Copy, ExternalLink, Printer, Share2, Palette, Edit3, Layout, Maximize2, Shield, Move } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Trash2, QrCode, Smartphone, Check, Sparkles, Image as ImageIcon, Film, Heart, Type, Layers, FileText, Clock, RotateCcw, AlertTriangle, Eye, Download, Music, Loader2, CheckCircle2, Copy, ExternalLink, Printer, Share2, Palette, Edit3, Layout, Maximize2, Shield, Move, Play } from 'lucide-react';
 import { THEMES, ThemeId, generateDefaultGiftPreset } from '@recuerdos-qr/shared';
 import { NumberPicker } from '../../components/admin/NumberPicker';
 import { MemoryStoryGallery } from '../../components/public/gallery/MemoryStoryGallery';
@@ -1981,33 +1981,64 @@ const checkVideoDuration = (file: File): Promise<number> => {
                 ) : (
                   <div className="space-y-3">
                     {exportsList.map((job) => (
-                      <div key={job.id} className="p-4 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-between gap-4">
+                      <div key={job.id} className="p-4 rounded-2xl bg-slate-800 border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="px-2 py-0.5 rounded bg-pink-500/20 text-pink-400 font-mono text-[10px] font-bold uppercase">{job.format}</span>
                             <span className="text-xs font-bold text-white">{job.resolution || '1080x1920'}</span>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${job.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-300'}`}>
-                              {job.status === 'completed' ? '✓ Listo (100%)' : `${job.status} (${job.progress_percent || 0}%)`}
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                              job.status === 'completed' 
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                                : job.status === 'failed'
+                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                : 'bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse'
+                            }`}>
+                              {job.status === 'completed' ? '✓ Listo (100%)' : job.status === 'failed' ? '❌ Fallido' : `${job.status} (${job.progress_percent || 0}%)`}
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-400 font-mono">{new Date(job.created_at).toLocaleString()}</p>
+                          {job.error_message && (
+                            <p className="text-[11px] text-rose-400/90 italic font-mono mt-1">Nota: {job.error_message}</p>
+                          )}
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           {job.status === 'completed' && job.output_url && (
-                            <a
-                              href={`${API_BASE}/projects/${project.id}/exports/${job.id}/download`}
-                              download
-                              className="py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition"
+                            <>
+                              <a
+                                href={job.output_url.startsWith('http') ? job.output_url : `${API_BASE}${job.output_url}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="py-2 px-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs shadow flex items-center gap-1.5 transition cursor-pointer"
+                              >
+                                <Play className="w-3.5 h-3.5 fill-white text-white" />
+                                Ver video
+                              </a>
+                              <a
+                                href={`${API_BASE}/projects/${project.id}/exports/${job.id}/download`}
+                                download
+                                className="py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition cursor-pointer"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                                Descargar MP4
+                              </a>
+                            </>
+                          )}
+                          {job.status === 'failed' && (
+                            <button
+                              type="button"
+                              onClick={handleStartExport}
+                              className="py-2 px-3 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition cursor-pointer"
                             >
-                              <Download className="w-3.5 h-3.5" />
-                              Descargar MP4
-                            </a>
+                              <Film className="w-3.5 h-3.5" />
+                              Reintentar
+                            </button>
                           )}
                           <button
                             type="button"
                             onClick={() => handleDeleteExportJob(job.id)}
-                            className="p-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white transition"
+                            className="p-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white transition cursor-pointer"
+                            title="Eliminar exportación"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
