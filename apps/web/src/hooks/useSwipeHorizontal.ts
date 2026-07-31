@@ -93,17 +93,16 @@ export function useSwipeHorizontal({
 
     const deltaX = currentDragRef.current;
     const elapsed = Math.max(performance.now() - startTime.current, 1);
-    const velocity = Math.abs(deltaX) / elapsed; // px per ms
-    const containerW = window.innerWidth || 800;
-    const effectiveThreshold = Math.min(containerW * thresholdRatio, thresholdPx);
+    const velocity = Math.abs(deltaX) / elapsed;
+    const effectiveThreshold = 45; // 45px threshold for light, natural swipes
 
     setIsDragging(false);
     startX.current = null;
 
-    if (deltaX < -effectiveThreshold || (deltaX < -30 && velocity > 0.35)) {
+    if (deltaX < -effectiveThreshold || (deltaX < -25 && velocity > 0.20)) {
       // Swipe Left -> Next Item
       next();
-    } else if (deltaX > effectiveThreshold || (deltaX > 30 && velocity > 0.35)) {
+    } else if (deltaX > effectiveThreshold || (deltaX > 25 && velocity > 0.20)) {
       // Swipe Right -> Prev Item
       prev();
     } else {
