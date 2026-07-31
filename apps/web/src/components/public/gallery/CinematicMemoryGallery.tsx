@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MediaItem, ThemeConfig, PhotoFrameVariant } from '@recuerdos-qr/shared';
 import { useSwipeHorizontal } from '../../../hooks/useSwipeHorizontal';
 import { useAutoplay } from '../../../hooks/useAutoplay';
@@ -30,6 +30,23 @@ export const CinematicMemoryGallery: React.FC<CinematicMemoryGalleryProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const totalPhotos = photos.length;
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const resetControlsTimer = useCallback(() => {
+    setControlsVisible(true);
+    if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+    controlsTimerRef.current = setTimeout(() => {
+      setControlsVisible(false);
+    }, 2500);
+  }, []);
+
+  useEffect(() => {
+    resetControlsTimer();
+    return () => {
+      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+    };
+  }, [resetControlsTimer]);
 
   const {
     currentIndex,
@@ -55,20 +72,27 @@ export const CinematicMemoryGallery: React.FC<CinematicMemoryGalleryProps> = ({
     containerRef: containerRef as React.RefObject<HTMLElement>,
   });
 
+  // Reset timer on slide change
+  useEffect(() => {
+    resetControlsTimer();
+  }, [currentIndex, resetControlsTimer]);
+
   // Keyboard Left / Right Navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') {
         next();
         pauseTemporarily();
+        resetControlsTimer();
       } else if (e.key === 'ArrowLeft') {
         prev();
         pauseTemporarily();
+        resetControlsTimer();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [next, prev, pauseTemporarily]);
+  }, [next, prev, pauseTemporarily, resetControlsTimer]);
 
   // Capture mode: expose gallery controller to Playwright via window globals
   useEffect(() => {
@@ -85,7 +109,6 @@ export const CinematicMemoryGallery: React.FC<CinematicMemoryGalleryProps> = ({
     (window as any).__galleryCurrentIndex = currentIndex;
     (window as any).__galleryTotalPhotos = totalPhotos;
 
-    // Also respond to programmatic event from Playwright
     const handleCaptureNext = () => {
       next();
     };
@@ -113,6 +136,8 @@ export const CinematicMemoryGallery: React.FC<CinematicMemoryGalleryProps> = ({
       ref={containerRef}
       id="fotos"
       className="relative w-full max-w-[920px] mx-auto py-12 px-4 text-center select-none overflow-hidden"
+      onMouseMove={resetControlsTimer}
+      onTouchStart={resetControlsTimer}
       {...gestureHandlers}
     >
       {/* Dynamic Ambient Background */}
@@ -141,17 +166,22 @@ export const CinematicMemoryGallery: React.FC<CinematicMemoryGalleryProps> = ({
 
       {/* Center 3D Stage Scene */}
       <div className="relative z-20">
-        {/* Discrete Desktop Left/Right Control Buttons — hidden in capture mode */}
+        {/* Discrete Desktop Outer Left/Right Control Buttons with Auto-Hide */}
         {!captureMode && (
-          <div className="hidden sm:flex absolute inset-y-0 inset-x-2 z-30 items-center justify-between pointer-events-none">
+          <div
+            className={`hidden sm:flex absolute inset-y-0 inset-x-0 z-40 items-center justify-between pointer-events-none transition-all duration-500 ${
+              controlsVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+            }`}
+          >
             {currentIndex > 0 ? (
               <button
                 type="button"
                 onClick={() => {
                   prev();
                   pauseTemporarily();
+                  resetControlsTimer();
                 }}
-                className="pointer-events-auto p-3 rounded-full bg-black/40 hover:bg-black/75 border border-white/20 text-white shadow-xl transition backdrop-blur-md active:scale-95 cursor-pointer"
+                className="pointer-events-auto p-3.5 rounded-full bg-black/45 hover:bg-black/80 border border-white/25 text-white shadow-2xl transition backdrop-blur-md active:scale-95 cursor-pointer ml-1 sm:ml-2 hover:scale-110"
                 title="Foto anterior (Flecha Izquierda)"
               >
                 <ChevronLeft className="w-6 h-6" />
@@ -166,8 +196,9 @@ export const CinematicMemoryGallery: React.FC<CinematicMemoryGalleryProps> = ({
                 onClick={() => {
                   next();
                   pauseTemporarily();
+                  resetControlsTimer();
                 }}
-                className="pointer-events-auto p-3 rounded-full bg-black/40 hover:bg-black/75 border border-white/20 text-white shadow-xl transition backdrop-blur-md active:scale-95 cursor-pointer"
+                className="pointer-events-auto p-3.5 rounded-full bg-black/45 hover:bg-black/80 border border-white/25 text-white shadow-2xl transition backdrop-blur-md active:scale-95 cursor-pointer mr-1 sm:mr-2 hover:scale-110"
                 title="Siguiente foto (Flecha Derecha)"
               >
                 <ChevronRight className="w-6 h-6" />

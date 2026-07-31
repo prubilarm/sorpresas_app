@@ -112,30 +112,30 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
           <div className="absolute inset-0 bg-black/20" />
         </div>
 
-        {/* Main photo / video — 100% of video visible (object-contain) with zero black bars thanks to glowing background */}
-        <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden flex items-center justify-center p-1">
+        {/* Main photo / video — 100% of video visible (object-contain) with zero cropping thanks to ambient video glow */}
+        <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden flex items-center justify-center p-2 sm:p-3">
           {isMediaVideo(currentPhoto, currentUrl) ? (
             <video
               src={currentUrl}
               autoPlay
               muted
               playsInline
-              className={`w-full h-full object-contain drop-shadow-2xl transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
+              className={`w-full h-full object-contain drop-shadow-2xl transition-all duration-500 rounded-xl ${isBW ? 'grayscale contrast-110' : ''}`}
             />
           ) : (
             <img
               src={currentUrl}
               alt={currentPhoto.caption || 'Foto'}
-              className={`w-full h-full object-contain drop-shadow-2xl transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
+              className={`w-full h-full object-contain drop-shadow-2xl transition-all duration-500 rounded-xl ${isBW ? 'grayscale contrast-110' : ''}`}
               draggable={false}
             />
           )}
         </div>
 
-        {/* Soft bottom gradient to ensure text readability */}
+        {/* Soft bottom gradient to ensure text readability without obscuring video content */}
         <div
-          className="absolute inset-x-0 bottom-0 h-28 pointer-events-none z-20 rounded-b-2xl"
-          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)' }}
+          className="absolute inset-x-0 bottom-0 h-24 pointer-events-none z-20 rounded-b-2xl"
+          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)' }}
         />
       </div>
 
