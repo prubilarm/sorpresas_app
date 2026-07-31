@@ -16,7 +16,7 @@ interface StartScreenProps {
 }
 
 export const StartScreen: React.FC<StartScreenProps> = ({
-  kicker = '❤️ El comienzo de nuestra historia',
+  kicker = '✨ Un detalle preparado con todo mi amor',
   productTitle = 'Una historia especial',
   senderName,
   recipientName,
@@ -158,10 +158,6 @@ export const StartScreen: React.FC<StartScreenProps> = ({
             <span>{buttonText || 'Toca para abrir tu detalle'}</span>
           </button>
         </div>
-
-        <p className="text-[10px] font-mono tracking-widest text-pink-200/60 uppercase">
-          Toca en cualquier lugar para comenzar con música ❤️
-        </p>
       </div>
     </div>
   );
