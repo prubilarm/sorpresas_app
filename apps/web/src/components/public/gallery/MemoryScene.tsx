@@ -1,6 +1,7 @@
 import React from 'react';
 import { MediaItem, ThemeConfig } from '@recuerdos-qr/shared';
 import { resolveMediaUrl } from '../../../services/api';
+import { Heart, Sparkles } from 'lucide-react';
 
 interface MemorySceneProps {
   currentPhoto: MediaItem;
@@ -42,7 +43,7 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
     : 'transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 450ms cubic-bezier(0.16, 1, 0.3, 1), filter 450ms ease';
 
   const baseCard =
-    'absolute top-0 w-full max-w-[340px] sm:max-w-[420px] h-[410px] sm:h-[450px] rounded-3xl overflow-hidden border flex flex-col justify-between shadow-2xl backdrop-blur-2xl transition-all';
+    'absolute top-0 w-full max-w-[340px] sm:max-w-[420px] h-[410px] sm:h-[450px] rounded-[32px] overflow-hidden border p-3.5 flex flex-col justify-between shadow-2xl backdrop-blur-2xl transition-all';
 
   return (
     <div
@@ -55,88 +56,91 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
           className={`${baseCard} left-1/2`}
           style={{
             transform: `translateX(calc(-50% - 105% + ${dragOffsetX}px)) scale(${0.88 + Math.max(0, dragRatio) * 0.12}) rotate(${-5 + dragRatio * 5}deg)`,
-            opacity: 0.4 + Math.max(0, dragRatio) * 0.6,
+            opacity: 0.45 + Math.max(0, dragRatio) * 0.55,
             transition,
-            borderColor: theme?.cardBorder || 'rgba(255,255,255,0.15)',
-            background: theme?.cardBg || 'rgba(10,4,18,0.88)',
+            borderColor: 'rgba(212, 175, 55, 0.25)',
+            background: 'linear-gradient(145deg, #f4efe4 0%, #e9e0cf 100%)',
             zIndex: dragOffsetX > 0 ? 15 : 5,
           }}
         >
           {isMediaVideo(prevPhoto, prevUrl) ? (
-            <video src={prevUrl} autoPlay muted playsInline className="w-full h-full object-cover" />
+            <video src={prevUrl} autoPlay muted playsInline className="w-full h-full object-cover rounded-2xl opacity-60" />
           ) : (
             <img
               src={prevUrl}
               alt=""
               aria-hidden="true"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-2xl opacity-60"
               draggable={false}
             />
           )}
-          <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+          <div className="absolute inset-0 bg-black/20 pointer-events-none rounded-[32px]" />
         </div>
       )}
 
-      {/* ── CURRENT slide — center stage with liquid physics ── */}
+      {/* ── CURRENT slide — Center Stage Romantic Journal Card ── */}
       <div
         className={`${baseCard} left-1/2`}
         style={{
           transform: `translateX(calc(-50% + ${dragOffsetX}px)) scale(${1 - Math.abs(dragRatio) * 0.06}) rotate(${dragRatio * -3}deg)`,
           opacity: 1 - Math.abs(dragRatio) * 0.2,
           transition,
-          borderColor: theme?.cardBorder || 'rgba(255,255,255,0.25)',
-          background: theme?.cardBg || 'rgba(12,5,20,0.95)',
-          boxShadow: '0 30px 90px rgba(0,0,0,0.8), 0 0 40px rgba(236,72,153,0.15)',
+          borderColor: 'rgba(212, 175, 55, 0.45)', // Fine Gold Trim
+          background: 'linear-gradient(145deg, #fdfdf9 0%, #f7f3e8 100%)', // Luxury Warm Ivory Paper
+          boxShadow: '0 30px 95px rgba(0,0,0,0.65), inset 0 0 50px rgba(235,220,190,0.4)',
           zIndex: 20,
           cursor: isDragging ? 'grabbing' : 'grab',
         }}
       >
-        {/* Ambient blurred background glow layer — fills all surrounding space with video colors so ZERO black bars exist */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
-          {isMediaVideo(currentPhoto, currentUrl) ? (
-            <video
-              src={currentUrl}
-              autoPlay
-              muted
-              playsInline
-              className="w-full h-full object-cover blur-3xl opacity-75 scale-150 saturate-150 brightness-110"
-            />
+        {/* Paper Corner Stitching Accent */}
+        <div className="absolute inset-0 pointer-events-none border border-dashed border-amber-900/15 rounded-[32px]" />
+
+        {/* ── Paper Top Header Bar ── */}
+        <div className="relative z-10 flex items-center justify-between px-2 pt-1 pb-1.5 border-b border-amber-900/10">
+          <div className="flex items-center gap-1.5 text-amber-800/70">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-semibold">
+              Recuerdo Especial
+            </span>
+          </div>
+          {(currentPhoto as any).taken_at ? (
+            <span className="text-[10px] font-mono tracking-widest text-amber-900/60 uppercase">
+              {new Date((currentPhoto as any).taken_at).toLocaleDateString()}
+            </span>
           ) : (
-            <img
-              src={currentUrl}
-              alt=""
-              aria-hidden="true"
-              className="w-full h-full object-cover blur-3xl opacity-75 scale-150 saturate-150 brightness-110"
-            />
+            <div className="w-2 h-2 rounded-full bg-rose-400/60 animate-ping" />
           )}
-          <div className="absolute inset-0 bg-black/20" />
         </div>
 
-        {/* Main photo / video — 100% of video visible (object-contain) with zero cropping thanks to ambient video glow */}
-        <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden flex items-center justify-center p-2 sm:p-3">
+        {/* ── Mounted Live Photograph Container (Center Piece) ── */}
+        <div className="relative z-10 my-2 flex-1 w-full rounded-2xl overflow-hidden bg-white/95 p-2 sm:p-2.5 shadow-[0_15px_35px_rgba(0,0,0,0.22)] border border-slate-200/80 flex items-center justify-center">
           {isMediaVideo(currentPhoto, currentUrl) ? (
             <video
               src={currentUrl}
               autoPlay
               muted
               playsInline
-              className={`w-full h-full object-contain drop-shadow-2xl transition-all duration-500 rounded-xl ${isBW ? 'grayscale contrast-110' : ''}`}
+              className={`w-full h-full object-contain rounded-xl drop-shadow-md transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
             />
           ) : (
             <img
               src={currentUrl}
               alt={currentPhoto.caption || 'Foto'}
-              className={`w-full h-full object-contain drop-shadow-2xl transition-all duration-500 rounded-xl ${isBW ? 'grayscale contrast-110' : ''}`}
+              className={`w-full h-full object-contain rounded-xl drop-shadow-md transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
               draggable={false}
             />
           )}
         </div>
 
-        {/* Soft bottom gradient to ensure text readability without obscuring video content */}
-        <div
-          className="absolute inset-x-0 bottom-0 h-24 pointer-events-none z-20 rounded-b-2xl"
-          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)' }}
-        />
+        {/* ── Paper Bottom Footer Bar ── */}
+        <div className="relative z-10 flex items-center justify-between px-2 pt-1.5 pb-0.5 border-t border-amber-900/10 text-amber-900/70">
+          <span className="font-serif italic text-xs tracking-wide">
+            {currentPhoto.caption ? `“${currentPhoto.caption}”` : 'Guardado con amor'}
+          </span>
+          <div className="flex items-center gap-1 text-rose-500/80">
+            <Heart className="w-3.5 h-3.5 fill-rose-500/60 text-rose-600 animate-pulse" />
+          </div>
+        </div>
       </div>
 
       {/* ── NEXT slide — peeks in from the RIGHT ── */}
