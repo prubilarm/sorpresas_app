@@ -288,13 +288,13 @@ const checkVideoDuration = (file: File): Promise<number> => {
       let updatedSections = [...sections];
 
       for (const file of files) {
-        // En la sección de fotos solo se permiten minivideos de máximo 2 segundos
+        // En la sección de fotos solo se permiten minivideos de máximo 3 segundos
         if (file.type.startsWith('video/')) {
           if (targetSection === 'photos') {
             const duration = await checkVideoDuration(file);
-            if (duration > 2.05) {
+            if (duration > 3.05) {
               alert(
-                `El video "${file.name}" dura ${duration.toFixed(1)} segundos. En la galería de fotos solo se permiten minivideos de máximo 2 segundos.`
+                `El video "${file.name}" dura ${duration.toFixed(1)} segundos. En la galería de fotos solo se permiten minivideos de máximo 3 segundos.`
               );
               continue;
             }
@@ -1517,12 +1517,12 @@ const checkVideoDuration = (file: File): Promise<number> => {
                   <div>
                     <h2 className="text-xl font-bold text-white">Galería de Fotografías &amp; Minivideos</h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Sube fotos o minivideos de máximo 2 segundos (estilo Live Photo). La foto de portada no aparece aquí.
+                      Sube fotos o minivideos de máximo 3 segundos (estilo Live Photo). La foto de portada no aparece aquí.
                     </p>
                   </div>
                   <label className="cursor-pointer py-2.5 px-5 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-lg flex items-center gap-1.5 hover:brightness-110 transition">
                     <Upload className="w-4 h-4" />
-                    {uploading ? 'Subiendo…' : 'Subir fotos / minivideos (máx 2s)'}
+                    {uploading ? 'Subiendo…' : 'Subir fotos / minivideos (máx 3s)'}
                     <input
                       type="file"
                       accept="image/*,video/*"
@@ -1582,7 +1582,7 @@ const checkVideoDuration = (file: File): Promise<number> => {
                   <div className="flex flex-col items-center justify-center py-14 gap-3 text-slate-500 border-2 border-dashed border-slate-700 rounded-2xl">
                     <Upload className="w-8 h-8" />
                     <p className="text-sm font-semibold">No hay recuerdos en la galería todavía</p>
-                    <p className="text-xs">Pulsa «Subir fotos / minivideos» para agregar recuerdos (máx 2s)</p>
+                    <p className="text-xs">Pulsa «Subir fotos / minivideos» para agregar recuerdos (máx 3s)</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -1618,7 +1618,7 @@ const checkVideoDuration = (file: File): Promise<number> => {
                                   />
                                 )}
                                 <span className="absolute top-1 left-1 bg-black/70 text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
-                                  #{idx + 1} {isVideoItem ? '🎥 2s' : ''}
+                                  #{idx + 1} {isVideoItem ? '🎥 3s' : ''}
                                 </span>
                               </div>
                             <div className="flex-1 space-y-1.5">
