@@ -17,7 +17,7 @@ interface StartScreenProps {
 
 export const StartScreen: React.FC<StartScreenProps> = ({
   kicker = '✨ Un detalle preparado con todo mi amor',
-  productTitle = 'Una historia especial',
+  productTitle = 'Una sorpresa especial hecha para ti',
   senderName,
   recipientName,
   personOneName,

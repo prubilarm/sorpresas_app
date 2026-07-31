@@ -253,8 +253,12 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
         {/* Start Screen Overlay */}
         {!started && mode === 'public' && (
           <StartScreen
-            kicker={resolved.startScreen.kicker}
-            productTitle={heroSec?.title || resolved.startScreen.title}
+            kicker="✨ Un detalle preparado con todo mi amor"
+            productTitle={
+              heroSec?.title && heroSec.title !== 'El comienzo de nuestra historia'
+                ? heroSec.title
+                : 'Una sorpresa especial hecha para ti'
+            }
             senderName={sender}
             recipientName={recipient}
             icon={resolved.startScreen.icon}
