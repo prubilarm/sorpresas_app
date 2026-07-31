@@ -151,10 +151,10 @@ export const VideoSection: React.FC<VideoSectionProps> = ({
                 poster={posterUrl || '/assets/fotos/portada.svg'}
                 controls
                 loop
+                autoPlay
                 playsInline
                 preload="auto"
                 onPlay={handleVideoPlay}
-                onPause={handleVideoPause}
                 onEnded={() => {
                   if (videoRef.current) {
                     videoRef.current.currentTime = 0;

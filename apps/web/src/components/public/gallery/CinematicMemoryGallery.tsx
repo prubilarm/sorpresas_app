@@ -159,10 +159,7 @@ export const CinematicMemoryGallery: React.FC<CinematicMemoryGalleryProps> = ({
         </h2>
       </div>
 
-      {/* Discrete Progress Bar (e.g. 03 / 12) */}
-      <div className="relative z-20 mb-4">
-        <MemoryProgress current={currentIndex + 1} total={totalPhotos} theme={theme} />
-      </div>
+
 
       {/* Center 3D Stage Scene */}
       <div className="relative z-20">
