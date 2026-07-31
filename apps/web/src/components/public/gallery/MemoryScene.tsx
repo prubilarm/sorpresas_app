@@ -109,28 +109,34 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
         <div className="absolute left-8 top-0 bottom-0 w-[2px] bg-rose-400/65 z-10 pointer-events-none" />
         <div className="absolute right-8 top-0 bottom-0 w-[2px] bg-rose-400/65 z-10 pointer-events-none" />
 
-        {/* ── Top Header: ✨ Recuerdo especial ── */}
+        {/* ── Top Header: 📖 Nuestro recuerdo especial ── */}
         <div className="relative z-20 text-center pt-1 pb-1">
-          <h3 className="font-serif italic font-semibold text-base sm:text-lg text-slate-800 tracking-wide flex items-center justify-center gap-1.5 drop-shadow-sm">
-            <span>✨ Recuerdo especial</span>
+          <h3 className="font-serif italic font-bold text-base sm:text-lg text-slate-800 tracking-wide flex items-center justify-center gap-1.5 drop-shadow-sm">
+            <span>📖 Nuestro recuerdo especial</span>
           </h3>
         </div>
 
-        {/* ── Mounted Photo/Video Frame — Centered in Middle ── */}
-        <div className="relative z-20 my-auto flex-1 w-full max-h-[300px] rounded-2xl overflow-hidden bg-white p-2.5 shadow-[0_12px_30px_rgba(0,0,0,0.18)] border border-slate-200/90 flex items-center justify-center">
+        {/* ── Mounted Physical Photo Frame with Washi Tape & Organic Tilt ── */}
+        <div className="relative z-20 my-auto flex-1 w-full max-h-[310px] rounded-2xl bg-white p-2.5 shadow-[0_20px_45px_rgba(0,0,0,0.28)] border-4 border-white flex items-center justify-center transform rotate-1 transition-transform duration-500">
+          {/* Washi Tape Accent - Top Left */}
+          <div className="absolute -top-3.5 left-5 z-30 w-14 h-5 bg-amber-100/75 border border-amber-200/60 backdrop-blur-sm -rotate-6 shadow-sm rounded-sm pointer-events-none" />
+          
+          {/* Washi Tape Accent - Top Right */}
+          <div className="absolute -top-3.5 right-5 z-30 w-14 h-5 bg-pink-100/75 border border-pink-200/60 backdrop-blur-sm rotate-6 shadow-sm rounded-sm pointer-events-none" />
+
           {isMediaVideo(currentPhoto, currentUrl) ? (
             <video
               src={currentUrl}
               autoPlay
               muted
               playsInline
-              className={`w-full h-full object-contain rounded-xl drop-shadow-md transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
+              className={`w-full h-full object-contain rounded-xl drop-shadow-sm transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
             />
           ) : (
             <img
               src={currentUrl}
               alt={currentPhoto.caption || 'Foto'}
-              className={`w-full h-full object-contain rounded-xl drop-shadow-md transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
+              className={`w-full h-full object-contain rounded-xl drop-shadow-sm transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
               draggable={false}
             />
           )}
@@ -138,7 +144,7 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
 
         {/* ── Bottom Footer: Guardado con amor ❤️ ── */}
         <div className="relative z-20 text-center pt-1 pb-1">
-          <p className="font-serif italic font-medium text-xs sm:text-sm text-slate-700 tracking-wide flex items-center justify-center gap-1">
+          <p className="font-serif italic font-semibold text-xs sm:text-sm text-slate-700 tracking-wide flex items-center justify-center gap-1">
             <span>Guardado con amor</span>
             <span className="text-rose-500 animate-pulse">❤️</span>
           </p>
