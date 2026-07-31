@@ -150,11 +150,17 @@ export const VideoSection: React.FC<VideoSectionProps> = ({
                 src={videoUrl}
                 poster={posterUrl || '/assets/fotos/portada.svg'}
                 controls
+                loop
                 playsInline
                 preload="auto"
                 onPlay={handleVideoPlay}
                 onPause={handleVideoPause}
-                onEnded={handleVideoPause}
+                onEnded={() => {
+                  if (videoRef.current) {
+                    videoRef.current.currentTime = 0;
+                    videoRef.current.play().catch(() => {});
+                  }
+                }}
                 className="w-full h-full max-h-[78vh] object-contain bg-black rounded-3xl"
               />
             ) : (
