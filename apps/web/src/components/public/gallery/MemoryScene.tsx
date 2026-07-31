@@ -61,7 +61,7 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
           }}
         >
           {isMediaVideo(prevPhoto, prevUrl) ? (
-            <video src={prevUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+            <video src={prevUrl} autoPlay muted playsInline className="w-full h-full object-cover" />
           ) : (
             <img
               src={prevUrl}
@@ -94,7 +94,7 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
         {currentIsLandscape && (
           <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
             {isMediaVideo(currentPhoto, currentUrl) ? (
-              <video src={currentUrl} autoPlay loop muted playsInline className="w-full h-full object-cover blur-2xl opacity-40 scale-110" />
+              <video src={currentUrl} autoPlay muted playsInline className="w-full h-full object-cover blur-2xl opacity-40 scale-110" />
             ) : (
               <img
                 src={currentUrl}
@@ -113,7 +113,6 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
             <video
               src={currentUrl}
               autoPlay
-              loop
               muted
               playsInline
               className={`w-full h-full ${currentIsLandscape ? 'object-contain' : 'object-cover'} transition-all duration-500 ${isBW ? 'grayscale contrast-110' : ''}`}
@@ -149,7 +148,7 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
           }}
         >
           {isMediaVideo(nextPhoto, nextUrl) ? (
-            <video src={nextUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+            <video src={nextUrl} autoPlay muted playsInline className="w-full h-full object-cover" />
           ) : (
             <img
               src={nextUrl}

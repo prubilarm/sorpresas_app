@@ -57,7 +57,6 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
             <video
               src={resolvedPhotoUrl}
               autoPlay
-              loop
               muted
               playsInline
               className="w-full h-full object-cover blur-2xl opacity-35 scale-125"
@@ -121,7 +120,6 @@ export const MemorySlide: React.FC<MemorySlideProps> = ({
             <video
               src={resolvedPhotoUrl}
               autoPlay
-              loop
               muted
               playsInline
               className={`w-full h-full object-contain transition-all duration-700 ${

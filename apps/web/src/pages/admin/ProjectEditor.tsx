@@ -1605,7 +1605,6 @@ const checkVideoDuration = (file: File): Promise<number> => {
                                   <video
                                     src={targetUrl}
                                     autoPlay
-                                    loop
                                     muted
                                     playsInline
                                     className={`w-full h-full object-cover ${item.is_bw ? 'filter grayscale' : ''}`}

@@ -18,7 +18,6 @@ export const MemoryBackground: React.FC<MemoryBackgroundProps> = ({ currentPhoto
         <video
           src={url}
           autoPlay
-          loop
           muted
           playsInline
           className="w-full h-full object-cover blur-3xl opacity-40 scale-125 transition-all duration-700"
