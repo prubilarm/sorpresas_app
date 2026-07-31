@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ThemeConfig } from '@recuerdos-qr/shared';
 import { useInView } from '../../hooks/useAnimation';
-import { Heart, Sparkles, X, MailOpen } from 'lucide-react';
+import { Heart, Sparkles, X } from 'lucide-react';
 
 interface LetterSectionProps {
   kicker?: string;
@@ -15,8 +15,8 @@ interface LetterSectionProps {
 
 export const LetterSection: React.FC<LetterSectionProps> = ({
   kicker = 'Lo que siento por ti',
-  heading = 'Un mensaje especial',
-  title = 'Para ti',
+  heading = 'Una carta para ti',
+  title = 'Para ti, mi amor',
   contentRaw,
   defaultContent,
   signature = 'Con todo mi cariño',
@@ -24,8 +24,9 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
 }) => {
   const [ref, visible] = useInView(0.15);
   const [isOpen, setIsOpen] = useState(false);
-  const [animState, setAnimState] = useState<'closed' | 'opening' | 'open' | 'closing'>('closed');
-  const [textRevealed, setTextRevealed] = useState(false);
+  
+  // Animation Machine: 'closed' | 'unsealing' | 'opening_flap' | 'sliding_letter' | 'revealing_text' | 'open' | 'fading_text' | 'folding_letter' | 'closing_flap' | 'resealing' | 'closing'
+  const [animStage, setAnimStage] = useState<string>('closed');
 
   let paragraphs: string[] = [];
   try {
@@ -48,47 +49,77 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
     ];
   }
 
+  // Opening Sequence (1.5s total)
   const handleOpen = useCallback(() => {
-    if (animState !== 'closed') return;
+    if (animStage !== 'closed') return;
     setIsOpen(true);
-    setAnimState('opening');
-    setTextRevealed(false);
-
-    // Lock body scroll while letter modal is open
+    setAnimStage('unsealing');
     document.body.style.overflow = 'hidden';
 
-    // Staggered sequence: 750ms start text reveal, 950ms fully open
-    const timerText = setTimeout(() => {
-      setTextRevealed(true);
-    }, 700);
+    // Step 1: Unseal wax stamp (0 - 300ms)
+    const t1 = setTimeout(() => {
+      setAnimStage('opening_flap');
+    }, 300);
 
-    const timerOpen = setTimeout(() => {
-      setAnimState('open');
-    }, 950);
+    // Step 2: Open 3D top flap (300 - 800ms)
+    const t2 = setTimeout(() => {
+      setAnimStage('sliding_letter');
+    }, 800);
+
+    // Step 3: Slide paper out & unfold (800 - 1400ms)
+    const t3 = setTimeout(() => {
+      setAnimStage('revealing_text');
+    }, 1400);
+
+    // Step 4: Final open state
+    const t4 = setTimeout(() => {
+      setAnimStage('open');
+    }, 1800);
 
     return () => {
-      clearTimeout(timerText);
-      clearTimeout(timerOpen);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
     };
-  }, [animState]);
+  }, [animStage]);
 
+  // Reverse Closing Sequence (1.4s total)
   const handleClose = useCallback(() => {
-    if (animState === 'closing' || animState === 'closed') return;
-    setAnimState('closing');
-    setTextRevealed(false);
+    if (animStage === 'closed' || animStage.startsWith('closing') || animStage === 'fading_text') return;
+    setAnimStage('fading_text');
 
-    // Restore body scroll
-    document.body.style.overflow = '';
+    // Step 1: Fade out text (0 - 350ms)
+    const t1 = setTimeout(() => {
+      setAnimStage('folding_letter');
+    }, 350);
 
-    const timerClose = setTimeout(() => {
-      setIsOpen(false);
-      setAnimState('closed');
+    // Step 2: Fold paper back into envelope pocket (350 - 850ms)
+    const t2 = setTimeout(() => {
+      setAnimStage('closing_flap');
     }, 850);
 
-    return () => clearTimeout(timerClose);
-  }, [animState]);
+    // Step 3: Close top 3D flap (850 - 1250ms)
+    const t3 = setTimeout(() => {
+      setAnimStage('resealing');
+    }, 1250);
 
-  // Handle ESC key to close modal
+    // Step 4: Restore wax seal & close (1250 - 1450ms)
+    const t4 = setTimeout(() => {
+      setAnimStage('closed');
+      setIsOpen(false);
+      document.body.style.overflow = '';
+    }, 1450);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+    };
+  }, [animStage]);
+
+  // ESC key handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -99,12 +130,28 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleClose]);
 
-  // Clean up body overflow when unmounting
+  // Clean up body overflow
   useEffect(() => {
     return () => {
       document.body.style.overflow = '';
     };
   }, []);
+
+  const isFlapOpen =
+    animStage === 'opening_flap' ||
+    animStage === 'sliding_letter' ||
+    animStage === 'revealing_text' ||
+    animStage === 'open' ||
+    animStage === 'fading_text' ||
+    animStage === 'folding_letter';
+
+  const isLetterUnfolded =
+    animStage === 'sliding_letter' ||
+    animStage === 'revealing_text' ||
+    animStage === 'open' ||
+    animStage === 'fading_text';
+
+  const isTextVisible = animStage === 'revealing_text' || animStage === 'open';
 
   return (
     <section
@@ -112,11 +159,11 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
       ref={ref as React.RefObject<HTMLElement>}
       className="w-full max-w-[780px] mx-auto py-14 px-4 text-center select-none"
     >
-      {/* Section Header */}
-      <div className="mb-8 space-y-1.5">
+      {/* Section Header with Refined Hierarchy */}
+      <div className="mb-10 space-y-2">
         {kicker && (
           <span
-            className={`reveal ${visible ? 'is-visible' : ''} uppercase tracking-[0.2em] text-xs font-bold block`}
+            className={`reveal ${visible ? 'is-visible' : ''} uppercase tracking-[0.25em] text-xs font-bold block`}
             style={{ color: theme?.kickerColor || '#ffd7e8' }}
           >
             {kicker}
@@ -126,106 +173,138 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
           className={`reveal reveal-delay-1 ${visible ? 'is-visible' : ''} text-4xl sm:text-6xl font-serif script-title leading-tight`}
           style={{ color: theme?.titleColor || '#ffffff', fontFamily: theme?.fontTitle || 'Georgia, serif' }}
         >
-          {heading}
+          {heading || 'Una carta para ti'}
         </h2>
+        <p className="text-xs sm:text-sm text-pink-200/80 font-serif italic">
+          Haz clic en el sobre para abrir tu mensaje romántico
+        </p>
       </div>
 
-      {/* ── CLOSED ENVELOPE CARD (INVITATION TO OPEN) ── */}
+      {/* ── 1. CLOSED PHYSICAL ENVELOPE CARD ── */}
       <div
         onClick={handleOpen}
-        className={`reveal-scale ${visible ? 'is-visible' : ''} group relative w-full max-w-[560px] mx-auto p-8 sm:p-12 rounded-[36px] text-center shadow-2xl border cursor-pointer overflow-hidden transition-all duration-700 hover:scale-[1.03] active:scale-[0.98]`}
+        className={`reveal-scale ${visible ? 'is-visible' : ''} group relative w-full max-w-[540px] h-[320px] sm:h-[350px] mx-auto rounded-[36px] p-6 sm:p-8 text-center cursor-pointer overflow-hidden transition-all duration-700 hover:scale-[1.03] active:scale-[0.98] shadow-[0_25px_80px_rgba(0,0,0,0.65)] border`}
         style={{
-          background: theme?.cardBg || 'rgba(15, 8, 22, 0.85)',
-          borderColor: theme?.cardBorder || 'rgba(255, 131, 182, 0.3)',
-          boxShadow: `0 25px 75px rgba(0,0,0,0.65), 0 0 50px ${theme?.glowColor || 'rgba(236,72,153,0.18)'}`,
+          background: 'linear-gradient(135deg, #f7f2e8 0%, #ebe2d3 100%)', // Luxury Parchment Envelope Paper
+          borderColor: 'rgba(212, 175, 55, 0.45)', // Fine Gold Accent Border
+          boxShadow: `0 30px 90px rgba(0,0,0,0.65), 0 0 50px ${theme?.glowColor || 'rgba(236,72,153,0.18)'}`,
         }}
       >
-        {/* Envelope Top Triangular Flap Simulation Background */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+        {/* Envelope Side Fold Seam Accents */}
+        <div className="absolute inset-0 pointer-events-none border-4 border-amber-900/10 rounded-[36px]" />
+        
+        {/* Envelope Top Triangular Flap Simulation */}
+        <div
+          className="absolute inset-x-0 top-0 h-36 origin-top transition-transform duration-700 ease-in-out pointer-events-none"
+          style={{
+            background: 'linear-gradient(180deg, #ede5d5 0%, #e2d7c3 100%)',
+            clipPath: 'polygon(0 0, 50% 85%, 100% 0)',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+          }}
+        />
 
-        {/* Envelope Decorative Stitching / Ribbon Line */}
-        <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 border-t border-dashed border-white/15 pointer-events-none" />
+        {/* Envelope Bottom Pocket Cover */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-44 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(0deg, #f2eadc 0%, #e6dccb 100%)',
+            clipPath: 'polygon(0 40%, 50% 0, 100% 40%, 100% 100%, 0 100%)',
+            boxShadow: 'inset 0 2px 15px rgba(0,0,0,0.08)',
+          }}
+        />
 
-        {/* Wax Seal Badge Centerpiece */}
-        <div className="relative z-10 flex flex-col items-center justify-center space-y-4">
+        {/* Wax Seal Centerpiece Button */}
+        <div className="relative z-20 h-full flex flex-col items-center justify-center space-y-4 pt-4">
           <div className="relative">
-            {/* Pulsing Aura */}
-            <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 opacity-40 blur-md group-hover:opacity-75 transition duration-500 animate-pulse" />
-            
-            {/* Wax Seal Button */}
-            <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-rose-600 via-pink-600 to-amber-700 flex items-center justify-center text-white shadow-2xl border-2 border-amber-300/40 transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
-              <Heart className="w-9 h-9 fill-white/90 text-amber-200 drop-shadow-md animate-bounce" />
+            {/* Soft Glowing Aura */}
+            <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 opacity-50 blur-lg group-hover:opacity-85 transition duration-500 animate-pulse" />
+
+            {/* Hand-Pressed Wax Stamp Badge */}
+            <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-br from-rose-700 via-pink-600 to-amber-800 flex items-center justify-center text-white shadow-[0_15px_35px_rgba(190,18,60,0.5)] border-2 border-amber-300/50 transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
+              <Heart className="w-10 h-10 fill-white/90 text-amber-200 drop-shadow-md animate-bounce" />
             </div>
           </div>
 
-          {/* Title & Teaser Text */}
-          <div className="space-y-1.5 pt-2">
-            <h3
-              className="text-2xl sm:text-3xl font-serif font-bold tracking-wide"
-              style={{ color: theme?.titleColor || '#ffffff', fontFamily: theme?.fontTitle || 'Georgia, serif' }}
-            >
-              {title || 'Carta de Amor'}
-            </h3>
-            <p className="text-xs sm:text-sm font-medium opacity-85 text-pink-200/90 flex items-center justify-center gap-1.5">
+          {/* Invitation Badge Label */}
+          <div className="space-y-1 z-30 pt-1">
+            <span className="inline-flex items-center gap-2 py-2 px-5 rounded-full bg-slate-900/80 hover:bg-slate-900 text-pink-200 text-xs font-bold shadow-xl backdrop-blur-md border border-pink-500/30 tracking-wide transition group-hover:scale-105">
               <Sparkles className="w-4 h-4 text-amber-300 animate-spin" style={{ animationDuration: '4s' }} />
-              <span>Haz clic para abrir la carta</span>
+              <span>Haz clic para abrir tu carta</span>
               <Sparkles className="w-4 h-4 text-amber-300 animate-spin" style={{ animationDuration: '4s' }} />
-            </p>
+            </span>
           </div>
         </div>
       </div>
 
-      {/* ── EXPANDABLE LUXURY 3D UNFOLDED LETTER MODAL ── */}
+      {/* ── 2. EXPANDABLE 3D CINEMATIC UNFOLDED LETTER MODAL ── */}
       {isOpen && (
         <div
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto transition-all duration-700 ${
-            animState === 'closing'
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto transition-all duration-700 select-none ${
+            animStage === 'closed' || animStage === 'resealing'
               ? 'opacity-0 backdrop-blur-none bg-black/0 pointer-events-none'
-              : 'opacity-100 backdrop-blur-xl bg-black/80'
+              : 'opacity-100 backdrop-blur-2xl bg-black/85'
           }`}
           onClick={handleClose}
+          style={{ perspective: '1400px' }}
         >
-          {/* Unfolded Letter Sheet Container */}
+          {/* Floating Romantic Background Hearts in Dark Margins */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 opacity-40">
+            {[...Array(12)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute text-pink-400/40 animate-pulse"
+                style={{
+                  top: `${(i * 19) % 90}%`,
+                  left: `${(i * 23) % 92}%`,
+                  fontSize: `${14 + (i % 4) * 8}px`,
+                  animationDuration: `${2.5 + (i % 3)}s`,
+                  animationDelay: `${i * 0.3}s`,
+                }}
+              >
+                ❤️
+              </div>
+            ))}
+          </div>
+
+          {/* 3D Envelope Container */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className={`relative w-full max-w-[660px] my-auto rounded-[32px] p-8 sm:p-14 text-slate-900 shadow-[0_35px_100px_rgba(0,0,0,0.85)] border transition-all duration-900 ease-out transform select-text ${
-              animState === 'opening'
-                ? 'scale-90 rotate-x-12 opacity-0 translate-y-12'
-                : animState === 'open'
+            className={`relative w-full max-w-[660px] my-auto rounded-[36px] p-8 sm:p-14 text-slate-900 shadow-[0_40px_120px_rgba(0,0,0,0.85),0_0_80px_rgba(251,191,36,0.2)] border transition-all duration-700 ease-out transform select-text ${
+              isLetterUnfolded
                 ? 'scale-100 rotate-x-0 opacity-100 translate-y-0'
                 : 'scale-90 rotate-x-12 opacity-0 translate-y-12'
             }`}
             style={{
-              background: 'linear-gradient(145deg, #fdfdf9 0%, #f7f4ea 100%)', // Fine Warm Linen Ivory Paper Texture
+              background: 'linear-gradient(145deg, #fdfdf9 0%, #f7f3e8 100%)', // Fine Warm Ivory Linen Paper Texture
               borderColor: 'rgba(212, 175, 55, 0.45)', // Gold Accent Border
-              boxShadow: '0 40px 120px rgba(0, 0, 0, 0.7), inset 0 0 80px rgba(235, 220, 190, 0.4)',
+              boxShadow: '0 45px 130px rgba(0, 0, 0, 0.85), inset 0 0 90px rgba(235, 220, 190, 0.45)',
             }}
           >
-            {/* Close Button Top Right */}
+            {/* Floating Close Button Top Right */}
             <button
               type="button"
               onClick={handleClose}
-              className="absolute top-5 right-5 sm:top-7 sm:right-7 py-2 px-4 rounded-full bg-slate-900/10 hover:bg-slate-900/20 text-slate-800 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer backdrop-blur-sm border border-slate-900/15 shadow-sm active:scale-95"
+              className="absolute top-5 right-5 sm:top-7 sm:right-7 py-2.5 px-4 rounded-full bg-slate-900/10 hover:bg-slate-900/20 text-slate-800 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer backdrop-blur-sm border border-slate-900/15 shadow-sm active:scale-95 z-30"
               title="Cerrar carta (ESC)"
             >
               <X className="w-4 h-4 text-slate-800" />
               <span>Cerrar carta</span>
             </button>
 
-            {/* Vintage Gold Paper Watermark / Header */}
+            {/* Vintage Gold Header Watermark */}
             <div className="flex items-center justify-center gap-2 mb-6">
               <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-700/40" />
-              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-800/70 font-semibold">
+              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-800/75 font-semibold">
                 Mensaje Entregado Con Amor
               </span>
               <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-700/40" />
             </div>
 
-            {/* Letter Title */}
+            {/* Subtitle / Title inside Letter (e.g. "Te amo / Para ti, mi amor") */}
             {title && (
               <h3
-                className={`text-2xl sm:text-4xl font-serif text-center mb-8 font-bold text-slate-900 transition-all duration-700 ease-out ${
-                  textRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
+                className={`text-2xl sm:text-4xl font-serif text-center mb-6 font-bold text-amber-950 transition-all duration-700 ease-out ${
+                  isTextVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
                 }`}
                 style={{ fontFamily: theme?.fontTitle || '"Playfair Display", Georgia, serif' }}
               >
@@ -233,23 +312,23 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
               </h3>
             )}
 
-            {/* Quote Symbol Background Graphic */}
+            {/* Decorative Quote Symbol */}
             <div className="font-serif text-6xl leading-none select-none text-amber-800/15 text-center -mb-6">
               “
             </div>
 
-            {/* Paragraphs with Progressive Staggered Reveal */}
+            {/* Paragraphs with Staggered Cascading Reveal */}
             <div className="space-y-6 text-center max-w-[540px] mx-auto">
               {paragraphs.map((p, idx) => (
                 <p
                   key={idx}
                   className={`transition-all duration-700 ease-out font-serif italic text-base sm:text-xl leading-relaxed text-slate-800 ${
-                    textRevealed
+                    isTextVisible
                       ? 'opacity-100 translate-y-0 filter-none'
                       : 'opacity-0 translate-y-8 blur-[2px]'
                   }`}
                   style={{
-                    transitionDelay: `${idx * 160}ms`,
+                    transitionDelay: `${idx * 180}ms`,
                     fontFamily: '"Playfair Display", Georgia, serif',
                   }}
                 >
@@ -262,9 +341,9 @@ export const LetterSection: React.FC<LetterSectionProps> = ({
             {signature && (
               <div
                 className={`mt-10 pt-6 border-t border-amber-900/15 text-center transition-all duration-700 ease-out ${
-                  textRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  isTextVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
-                style={{ transitionDelay: `${paragraphs.length * 160 + 120}ms` }}
+                style={{ transitionDelay: `${paragraphs.length * 180 + 150}ms` }}
               >
                 <p className="font-mono text-[9px] uppercase tracking-widest text-amber-800/60 mb-1 font-bold">
                   Con todo mi amor
