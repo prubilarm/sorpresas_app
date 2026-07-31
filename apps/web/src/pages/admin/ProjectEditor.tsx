@@ -1209,7 +1209,7 @@ export const ProjectEditor: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-400">Fotografía Principal de Portada</label>
                 {heroSec.settings_json?.cover && (
                   <div className="relative w-full max-w-sm h-48 rounded-2xl overflow-hidden bg-slate-800 border border-slate-700">
-                    <img src={heroSec.settings_json.cover} alt="Portada" className="w-full h-full object-cover" />
+                    <img src={resolveMediaUrl(heroSec.settings_json.cover)} alt="Portada" className="w-full h-full object-cover" />
                   </div>
                 )}
                 <label className="cursor-pointer inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-lg hover:brightness-110 transition">
@@ -1231,7 +1231,7 @@ export const ProjectEditor: React.FC = () => {
                 {project.settings_json?.song_photo_url && (
                   <div className="relative w-full max-w-xs h-44 rounded-2xl overflow-hidden border border-slate-700 bg-slate-800">
                     <img
-                      src={project.settings_json.song_photo_url}
+                      src={resolveMediaUrl(project.settings_json.song_photo_url)}
                       alt="Foto de la canción"
                       className="w-full h-full object-cover"
                     />
@@ -1529,7 +1529,7 @@ export const ProjectEditor: React.FC = () => {
                         >
                           <div className="flex items-center gap-3">
                             <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-black flex-shrink-0 border border-slate-700">
-                              <img src={item.public_url} alt="Foto" className={`w-full h-full object-cover ${item.is_bw ? 'filter grayscale' : ''}`} />
+                              <img src={resolveMediaUrl(item.public_url || item.url || item.storage_path || item.media_url)} alt="Foto" className={`w-full h-full object-cover ${item.is_bw ? 'filter grayscale' : ''}`} />
                               <span className="absolute top-1 left-1 bg-black/70 text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
                                 #{idx + 1}
                               </span>
