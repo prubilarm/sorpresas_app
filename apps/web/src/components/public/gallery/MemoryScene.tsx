@@ -104,8 +104,8 @@ export const MemoryScene: React.FC<MemorySceneProps> = ({
           </h3>
         </div>
 
-        {/* ── Mounted Polaroid Photograph Frame with Washi Tape ── */}
-        <div className="relative z-20 my-auto mx-auto w-full max-w-[340px] sm:max-w-[440px] bg-white p-3 sm:p-4 pb-9 sm:pb-11 rounded-xl shadow-[0_22px_55px_rgba(0,0,0,0.32)] border border-slate-200/90 flex flex-col items-center justify-between transform rotate-1 transition-all duration-500 hover:rotate-0 hover:scale-[1.02]">
+        {/* ── Mounted Polaroid Photograph Frame with Washi Tape & Drop Bounce ── */}
+        <div className="relative z-20 my-auto mx-auto w-full max-w-[340px] sm:max-w-[440px] bg-white p-3 sm:p-4 pb-9 sm:pb-11 rounded-xl shadow-[0_22px_55px_rgba(0,0,0,0.32)] border border-slate-200/90 flex flex-col items-center justify-between transform rotate-1 transition-all duration-500 hover:rotate-0 hover:scale-[1.02] animate-polaroid-drop">
           {/* Washi Tape Accent - Top Left */}
           <div className="absolute -top-3.5 left-6 z-30 w-16 h-6 bg-amber-100/75 border border-amber-200/60 backdrop-blur-sm -rotate-12 shadow-sm rounded-sm pointer-events-none opacity-90" />
           
