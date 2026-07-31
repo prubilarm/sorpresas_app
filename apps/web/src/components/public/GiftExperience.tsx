@@ -19,6 +19,32 @@ import { FinalSection } from './FinalSection';
 import { DynamicParticles } from './DynamicParticles';
 import { Smartphone, Maximize2, Volume2, VolumeX } from 'lucide-react';
 
+// Helper for progressive smooth audio volume fade transition
+const fadeAudioVolume = (audio: HTMLAudioElement | null, targetVolume: number, durationMs = 1400) => {
+  if (!audio) return;
+  const startVolume = audio.volume;
+  const delta = targetVolume - startVolume;
+  if (Math.abs(delta) < 0.005) {
+    audio.volume = targetVolume;
+    return;
+  }
+
+  const startTime = performance.now();
+  const step = (currentTime: number) => {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / durationMs, 1);
+    const eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+    audio.volume = Math.max(0, Math.min(1, startVolume + delta * eased));
+
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      audio.volume = targetVolume;
+    }
+  };
+  requestAnimationFrame(step);
+};
+
 interface GiftExperienceProps {
   project: any;
   sections?: any[];
@@ -416,7 +442,8 @@ export const GiftExperience: React.FC<GiftExperienceProps> = ({
               theme={theme}
               onVideoPlayStateChange={(isPlayingVideo) => {
                 if (bgAudioRef.current) {
-                  bgAudioRef.current.volume = isPlayingVideo ? 0.08 : 0.55;
+                  const targetVolume = isPlayingVideo ? 0.05 : 0.55;
+                  fadeAudioVolume(bgAudioRef.current, targetVolume, 1400);
                 }
                 onVideoPlayStateChange?.(isPlayingVideo);
               }}

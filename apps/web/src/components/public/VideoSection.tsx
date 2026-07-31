@@ -1,9 +1,9 @@
-import React, { useRef } from 'react';
-import { Film } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Film, Play, X } from 'lucide-react';
 import { ThemeConfig } from '@recuerdos-qr/shared';
 
 interface VideoSectionProps {
-  projectId: string;
+  projectId?: string;
   title?: string;
   intro?: string;
   buttonText?: string;
@@ -24,7 +24,38 @@ export const VideoSection: React.FC<VideoSectionProps> = ({
   theme,
   onVideoPlayStateChange,
 }) => {
+  const [isPlayerVisible, setIsPlayerVisible] = useState(false);
+  const [isImmersive, setIsImmersive] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleOpenVideo = () => {
+    setIsPlayerVisible(true);
+    setIsImmersive(true);
+    onVideoPlayStateChange?.(true);
+
+    setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.play().catch(() => {});
+      }
+    }, 350);
+  };
+
+  const handleCloseVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    setIsImmersive(false);
+    onVideoPlayStateChange?.(false);
+  };
+
+  const handleVideoPlay = () => {
+    setIsImmersive(true);
+    onVideoPlayStateChange?.(true);
+  };
+
+  const handleVideoPause = () => {
+    onVideoPlayStateChange?.(false);
+  };
 
   return (
     <section id="video" className="w-full max-w-[780px] mx-auto py-12 px-4 text-center relative">
@@ -40,9 +71,9 @@ export const VideoSection: React.FC<VideoSectionProps> = ({
         </h2>
       </div>
 
-      {/* Pre-video Message & Direct Video Card */}
+      {/* Pre-video Message Card */}
       <div
-        className="w-full max-w-[680px] mx-auto p-6 sm:p-8 rounded-3xl border shadow-2xl mb-6 space-y-5"
+        className="w-full max-w-[640px] mx-auto p-6 sm:p-8 rounded-3xl border shadow-2xl mb-6 space-y-5"
         style={{
           background: theme?.cardBg || 'rgba(0,0,0,0.35)',
           borderColor: theme?.cardBorder || 'rgba(255,255,255,0.1)',
@@ -56,32 +87,91 @@ export const VideoSection: React.FC<VideoSectionProps> = ({
           </p>
         )}
 
-        {/* Video Player Rendered Directly */}
-        {videoUrl ? (
-          <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl border border-pink-500/30 bg-black mt-4">
-            <video
-              ref={videoRef}
-              src={videoUrl}
-              poster={posterUrl || '/assets/fotos/portada.svg'}
-              controls
-              playsInline
-              preload="metadata"
-              onPlay={() => onVideoPlayStateChange?.(true)}
-              onPause={() => onVideoPlayStateChange?.(false)}
-              onEnded={() => onVideoPlayStateChange?.(false)}
-              className="w-full max-h-[75vh] object-contain bg-black rounded-2xl"
-            />
-          </div>
-        ) : (
-          <div className="min-h-[220px] flex flex-col items-center justify-center gap-3 p-6 text-slate-300 bg-black/40 rounded-2xl border border-white/10">
-            <Film className="w-12 h-12 text-pink-400 opacity-70" />
-            <strong className="text-lg text-white">Video especial</strong>
-            <p className="text-sm opacity-80">El video personalizado cargado se mostrará aquí.</p>
+        {/* Initial View: Only the "Ver video" Button */}
+        {!isPlayerVisible && (
+          <div className="pt-2 flex flex-col items-center">
+            <button
+              type="button"
+              onClick={handleOpenVideo}
+              className={`inline-flex items-center justify-center gap-3 py-4 px-9 rounded-full font-bold text-white shadow-2xl hover:brightness-110 active:scale-95 transition-all duration-300 ${
+                theme?.buttonStyle || 'bg-pink-600'
+              }`}
+            >
+              <Play className="w-5 h-5 fill-white text-white" />
+              Ver video
+            </button>
           </div>
         )}
-
-        {caption && <p className="mt-3 text-center font-serif italic text-sm text-pink-200/90">{caption}</p>}
       </div>
+
+      {/* 🎬 Fullscreen Cinematic Immersive Theater Overlay */}
+      {isImmersive && (
+        <div className="fixed inset-0 z-50 bg-black/92 backdrop-blur-xl flex flex-col items-center justify-center p-4 sm:p-8 transition-all duration-700 animate-fade-in overflow-hidden">
+          
+          {/* Subtle Ambient Romantic Floating Hearts in Dark Margins */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+            {[...Array(16)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute text-pink-400/40 animate-wave-float select-none pointer-events-none"
+                style={{
+                  left: `${(i * 6.5 + 2) % 96}%`,
+                  bottom: '-40px',
+                  fontSize: `${14 + (i % 4) * 8}px`,
+                  animationDuration: `${6.5 + (i % 5) * 2}s`,
+                  animationDelay: `${(i % 5) * 1.2}s`,
+                  filter: 'drop-shadow(0 0 8px rgba(244, 114, 182, 0.45))',
+                }}
+              >
+                ♥
+              </div>
+            ))}
+          </div>
+
+          {/* Top Bar with Close Action */}
+          <div className="relative z-10 w-full max-w-4xl flex items-center justify-between mb-4 px-2 text-white">
+            <span className="font-serif text-sm italic text-pink-300 truncate">{title}</span>
+            <button
+              type="button"
+              onClick={handleCloseVideo}
+              className="flex items-center gap-2 py-2 px-4 rounded-full bg-white/10 text-white hover:bg-rose-600/90 transition text-xs font-semibold backdrop-blur-md border border-white/20 shadow-lg cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+              Cerrar reproductor
+            </button>
+          </div>
+
+          {/* Centered Main Video Player Container */}
+          <div className="relative z-10 w-full max-w-4xl max-h-[80vh] rounded-3xl overflow-hidden shadow-[0_0_90px_rgba(236,72,153,0.35)] border border-pink-500/30 bg-black">
+            {videoUrl ? (
+              <video
+                ref={videoRef}
+                src={videoUrl}
+                poster={posterUrl || '/assets/fotos/portada.svg'}
+                controls
+                playsInline
+                preload="auto"
+                onPlay={handleVideoPlay}
+                onPause={handleVideoPause}
+                onEnded={handleVideoPause}
+                className="w-full h-full max-h-[78vh] object-contain bg-black rounded-3xl"
+              />
+            ) : (
+              <div className="min-h-[300px] flex flex-col items-center justify-center gap-3 p-6 text-slate-300">
+                <Film className="w-12 h-12 text-pink-400" />
+                <strong className="text-lg text-white">Video especial</strong>
+                <p className="text-sm opacity-80">El video personalizado cargado se reproducirá aquí.</p>
+              </div>
+            )}
+          </div>
+
+          {caption && (
+            <p className="relative z-10 mt-4 text-center font-serif italic text-sm text-pink-200/90">
+              {caption}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Restart section button */}
       <div className="mt-10 flex flex-col items-center gap-2">
