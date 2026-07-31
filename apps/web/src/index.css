@@ -339,3 +339,14 @@ body {
 .animate-apple-dust {
   animation: appleDustGlow 3.5s ease-in-out infinite;
 }
+
+/* ─── Ultra-Slow Ken Burns Background Animation ─── */
+@keyframes kenBurnsSlow {
+  0% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.08) translate(-0.8%, -0.8%); }
+  100% { transform: scale(1.15) translate(0.8%, 0.8%); }
+}
+
+.animate-ken-burns {
+  animation: kenBurnsSlow 25s ease-in-out infinite alternate;
+}

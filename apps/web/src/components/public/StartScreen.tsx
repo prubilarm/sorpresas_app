@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { ThemeConfig } from '@recuerdos-qr/shared';
-import { Heart, Sparkles, Play } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface StartScreenProps {
   kicker?: string;
@@ -16,41 +16,40 @@ interface StartScreenProps {
 }
 
 export const StartScreen: React.FC<StartScreenProps> = ({
-  kicker = '✨ Un detalle preparado con todo mi amor',
-  productTitle = 'Una sorpresa especial hecha para ti',
+  kicker = 'UN REGALO ESPECIAL',
+  productTitle = 'El comienzo de nuestra historia',
   senderName,
   recipientName,
   personOneName,
   personTwoName,
-  buttonText = 'Toca para abrir tu detalle',
   theme,
   onStart,
 }) => {
   const sender = senderName || personOneName || 'Hans';
   const recipient = recipientName || personTwoName || 'Tamara';
-  const accentColor = theme?.accentColor || '#ec4899';
 
   const [isOpening, setIsOpening] = useState(false);
 
-  // Floating particles (smooth GPU acceleration)
-  const particles = Array.from({ length: 20 }).map((_, i) => ({
+  // Apple-style Golden Dust Light Particles (Discrete & Elegant)
+  const dustParticles = Array.from({ length: 28 }).map((_, i) => ({
     id: i,
-    left: (i * 4.8 + 3) % 94,
-    size: 10 + (i % 5) * 4,
-    delay: (i * 0.4) % 5,
-    duration: 6 + (i % 4) * 1.5,
-    isHeart: i % 2 === 0,
+    left: (i * 3.4 + 2) % 96,
+    top: (i * 4.3 + 3) % 94,
+    size: 2 + (i % 4) * 2,
+    delay: (i * 0.35) % 4.5,
+    duration: 4.5 + (i % 3) * 2,
+    opacity: 0.25 + (i % 4) * 0.15,
   }));
 
-  // Immediate Click Handler (Ensures Browser Autoplay Approval for Song!)
+  // Immediate Click Handler (Triggers Audio Instantly with 100% Browser Approval!)
   const handleClick = useCallback(() => {
     if (isOpening) return;
     setIsOpening(true);
 
-    // Smooth 300ms transition before revealing content & starting music
+    // Smooth 350ms cinematic camera zoom + light bloom transition
     setTimeout(() => {
       onStart();
-    }, 300);
+    }, 350);
   }, [isOpening, onStart]);
 
   return (
@@ -61,97 +60,97 @@ export const StartScreen: React.FC<StartScreenProps> = ({
       }}
       tabIndex={0}
       role="button"
-      aria-label="Abrir regalo especial"
-      className={`fixed inset-0 z-50 flex items-center justify-center p-6 cursor-pointer select-none overflow-hidden transition-all duration-300 ease-out ${
-        isOpening ? 'opacity-0 scale-105 filter blur-sm pointer-events-none' : 'opacity-100 scale-100'
-      }`}
-      style={{
-        background: theme?.bgGradient || 'radial-gradient(circle at center, #3d0517 0%, #1c020b 60%, #0a0005 100%)',
-      }}
+      aria-label="Toca cualquier parte para comenzar"
+      className="fixed inset-0 z-50 flex items-center justify-center p-6 cursor-pointer select-none overflow-hidden bg-black text-white"
     >
-      {/* ── Ambient Floating Particles & Hearts ── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        {particles.map((p) => (
+      {/* ── 100VW / 100VH FULLSCREEN BACKGROUND PHOTOGRAPHY (FOTO_FONDO) ── */}
+      <div
+        className={`absolute inset-0 z-0 overflow-hidden transition-all duration-700 ease-out transform-gpu ${
+          isOpening ? 'scale-125 opacity-0 blur-lg' : 'scale-100 opacity-100'
+        }`}
+      >
+        <img
+          src="/assets/foto_fondo.jpg"
+          alt="Fotografía de portada"
+          className="w-full h-full object-cover animate-ken-burns transform-gpu"
+        />
+
+        {/* ── Subtle Dark Overlay (25%-35%) + Micro Backdrop Blur for Perfect Legibility ── */}
+        <div className="absolute inset-0 bg-black/35 backdrop-blur-[1px] transition-colors duration-500" />
+        
+        {/* ── Radial Soft Warm Bloom Aura ── */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />
+      </div>
+
+      {/* ── Discrete Apple Light Dust Particles ── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+        {dustParticles.map((p) => (
           <span
             key={p.id}
-            className="absolute opacity-50"
+            className="absolute rounded-full bg-amber-200 animate-apple-dust"
             style={{
               left: `${p.left}%`,
-              bottom: '-20px',
-              fontSize: `${p.size}px`,
-              color: p.isHeart ? accentColor : '#fbbf24',
-              filter: `drop-shadow(0 0 6px ${p.isHeart ? accentColor : '#fbbf24'})`,
-              animation: `waveFloat ${p.duration}s ${p.delay}s linear infinite`,
+              top: `${p.top}%`,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              opacity: p.opacity,
+              boxShadow: `0 0 8px rgba(253, 224, 71, 0.7), 0 0 16px rgba(244, 114, 182, 0.4)`,
+              animationDelay: `${p.delay}s`,
+              animationDuration: `${p.duration}s`,
             }}
-          >
-            {p.isHeart ? '♥' : '✨'}
-          </span>
+          />
         ))}
       </div>
 
-      {/* ── Radial Soft Glowing Aura ── */}
+      {/* ── INTEGRATED DIRECT TYPOGRAPHY (NO CARD, NO BOX, NO BUTTON) ── */}
       <div
-        className="absolute w-[440px] h-[440px] rounded-full pointer-events-none animate-pulse"
-        style={{
-          background: `radial-gradient(circle, ${accentColor}40 0%, transparent 70%)`,
-        }}
-      />
-
-      {/* ── CENTRAL ELEGANT PRESENTATION CARD ── */}
-      <div
-        className="relative z-10 w-full max-w-[440px] text-center border rounded-[36px] p-8 sm:p-11 shadow-[0_30px_100px_rgba(0,0,0,0.8)] space-y-6 backdrop-blur-2xl transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
-        style={{
-          background: theme?.cardBg || 'rgba(15, 4, 12, 0.82)',
-          borderColor: theme?.cardBorder || 'rgba(212, 175, 55, 0.45)',
-          color: theme?.textColor || '#ffffff',
-          boxShadow: `0 35px 100px rgba(0,0,0,0.85), 0 0 60px ${theme?.glowColor || 'rgba(236,72,153,0.25)'}`,
-        }}
+        className={`relative z-20 max-w-[680px] w-full text-center px-4 space-y-8 sm:space-y-10 transition-all duration-500 transform-gpu ${
+          isOpening ? 'scale-110 opacity-0 blur-sm translate-y-4' : 'scale-100 opacity-100 translate-y-0'
+        }`}
       >
         {/* Kicker Header */}
-        <span
-          className="uppercase tracking-[0.25em] text-xs font-bold block animate-pulse"
-          style={{ color: theme?.kickerColor || '#ffd7e8' }}
-        >
-          {kicker}
-        </span>
-
-        {/* Pulsing Central Wax Heart Stamp */}
-        <div className="flex justify-center my-2">
-          <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-br from-rose-600 via-pink-600 to-amber-700 flex items-center justify-center text-white shadow-[0_15px_40px_rgba(225,29,72,0.55)] border-2 border-amber-300/60 transform transition-transform duration-300 group-hover:scale-110">
-            <Heart className="w-10 h-10 fill-white text-amber-200 drop-shadow-md animate-bounce" />
-          </div>
+        <div className="space-y-2">
+          <span
+            className="uppercase tracking-[0.35em] text-xs sm:text-sm font-semibold block text-amber-200/90 drop-shadow-md animate-fade-in"
+            style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
+          >
+            {kicker}
+          </span>
+          <div className="w-12 h-px bg-amber-300/50 mx-auto" />
         </div>
 
         {/* Story Title */}
         <h1
-          className="text-3xl sm:text-5xl font-serif script-title leading-tight text-white drop-shadow-md"
-          style={{ color: theme?.titleColor || '#ffffff', fontFamily: theme?.fontTitle || 'Georgia, serif' }}
+          className="text-4xl sm:text-7xl font-serif script-title leading-tight text-white drop-shadow-[0_10px_35px_rgba(0,0,0,0.8)] tracking-wide"
+          style={{ fontFamily: theme?.fontTitle || "'Playfair Display', Georgia, serif" }}
         >
           {productTitle}
         </h1>
 
-        {/* Sender & Recipient Metadata (Ultra-Elegant Cormorant Garamond & Great Vibes) */}
-        <div className="py-4 px-6 rounded-2xl bg-gradient-to-br from-white/10 via-pink-950/30 to-amber-950/30 border border-amber-300/30 shadow-inner max-w-[360px] mx-auto space-y-1.5 backdrop-blur-md">
+        {/* Elegant Calligraphy Names (De Hans / Para Tamara) */}
+        <div className="py-2 space-y-2 font-serif italic text-xl sm:text-3xl text-pink-100/95 drop-shadow-lg">
           <p
-            className="text-lg sm:text-xl font-serif italic tracking-wide text-pink-200 flex items-center justify-center gap-2"
+            className="flex items-center justify-center gap-3"
             style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
           >
-            <span>De:</span>
+            <span className="opacity-80 text-lg sm:text-2xl font-light">De</span>
             <span
-              className="font-normal text-amber-100 text-3xl sm:text-4xl drop-shadow-md"
+              className="font-normal text-amber-100 text-4xl sm:text-6xl drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]"
               style={{ fontFamily: "'Great Vibes', cursive", letterSpacing: '0.05em' }}
             >
               {sender}
             </span>
           </p>
-          <div className="w-16 h-px bg-amber-300/40 mx-auto my-1" />
+          
+          <div className="w-16 h-px bg-white/25 mx-auto my-1" />
+
           <p
-            className="text-lg sm:text-xl font-serif italic tracking-wide text-amber-200 flex items-center justify-center gap-2"
+            className="flex items-center justify-center gap-3"
             style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }}
           >
-            <span>Para:</span>
+            <span className="opacity-80 text-lg sm:text-2xl font-light">Para</span>
             <span
-              className="font-normal text-amber-100 text-3xl sm:text-4xl drop-shadow-md"
+              className="font-normal text-amber-100 text-4xl sm:text-6xl drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]"
               style={{ fontFamily: "'Great Vibes', cursive", letterSpacing: '0.05em' }}
             >
               {recipient}
@@ -159,24 +158,13 @@ export const StartScreen: React.FC<StartScreenProps> = ({
           </p>
         </div>
 
-        {/* Primary Action Button (Triggers Audio Instantly!) */}
-        <div className="pt-2">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleClick();
-            }}
-            className="w-full py-4.5 px-8 rounded-full font-serif font-bold text-white shadow-2xl hover:brightness-110 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 text-lg sm:text-xl tracking-wider cursor-pointer border border-amber-300/40"
-            style={{
-              fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
-              background: `linear-gradient(135deg, ${accentColor}, #f43f5e)`,
-              boxShadow: `0 12px 40px ${theme?.glowColor || 'rgba(236,72,153,0.55)'}`,
-            }}
-          >
-            <Play className="w-5 h-5 fill-white text-white animate-pulse" />
-            <span>{buttonText || 'Toca para abrir tu detalle'}</span>
-          </button>
+        {/* Minimalist Action Prompt (No Clunky Button!) */}
+        <div className="pt-8 sm:pt-12">
+          <div className="inline-flex items-center gap-2.5 py-3 px-8 rounded-full bg-black/40 hover:bg-black/60 text-amber-100 text-xs sm:text-sm font-medium backdrop-blur-md border border-white/20 tracking-[0.25em] uppercase transition-all duration-300 shadow-2xl animate-pulse">
+            <Sparkles className="w-4 h-4 text-amber-300 animate-spin" style={{ animationDuration: '4s' }} />
+            <span>Toca cualquier parte para comenzar</span>
+            <Sparkles className="w-4 h-4 text-amber-300 animate-spin" style={{ animationDuration: '4s' }} />
+          </div>
         </div>
       </div>
     </div>
